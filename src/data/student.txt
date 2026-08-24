@@ -1,0 +1,10 @@
+SV001|Nguyen Van A|12|0901234567|nguyenvana@gmail.com|123 Le Loi, Q1, TP.HCM|Nam|15/03/2007|Toan,Ly|T2,T4,T6,T7|Trung binh|Khong quan tam|60000||false|CL005,CL023
+SV002|Tran Thi B|11|0912345678|tranthib@gmail.com|456 Nguyen Hue, Q1, TP.HCM|Nu|20/05/2008|Hoa,Sinh|T3,T5,T7|Kha|Nu|75000|Can gia su nhieu|false|
+SV003|Nguyen Van B|12|0123456789|nhukhoacr7@gmail.com|123 Hue|Nam|20/06/2006|Toan|T2,T3|Gioi|Khong quan tam|100000||false|CL004,CL008,CL025,CL026
+SV004|Le Thi C|10|0923456789|lethic@gmail.com|789 Tran Hung Dao, Q5, TP.HCM|Nu|10/08/2009|Toan,Anh|T2,T4,T5|Yeu|Nu|50000|Can tang cuong co ban|false|
+SV005|Pham Van D|11|0934567890|phamvand@gmail.com|321 Vo Van Tan, Q3, TP.HCM|Nam|25/11/2008|Ly,Hoa|T3,T6,T7|Kha|Nam|70000||false|CL005
+SV006|Hoang Thi E|12|0945678901|hoangthie@gmail.com|654 Nguyen Thi Minh Khai, Q1, TP.HCM|Nu|18/02/2007|Van,Su,Dia|T2,T4|Gioi|Khong quan tam|80000|Chuan bi thi Dai hoc|false|
+SV007|Vo Van F|10|0956789012|vovanf@gmail.com|987 Hai Ba Trung, Q3, TP.HCM|Nam|05/09/2009|Toan|T5,T7,CN|Trung binh|Khong quan tam|55000||false|
+SV008|Dang Thi G|11|0967890123|dangthig@gmail.com|147 Le Van Sy, Phu Nhuan, TP.HCM|Nu|12/04/2008|Anh,Van|T2,T3,T6|Kha|Nu|65000|Muon cai thien diem Anh|false|
+SV009|Bui Van H|12|0978901234|buivanh@gmail.com|258 Phan Xich Long, Phu Nhuan, TP.HCM|Nam|30/07/2007|Toan,Ly,Hoa|T4,T6|Gioi|Nam|95000|Can on thi Dai hoc|false|CL004
+SV010|Nguyen Thi I|10|0989012345|nguyenthii@gmail.com|369 Cach Mang Thang 8, Q10, TP.HCM|Nu|22/12/2009|Sinh,Hoa|T3,T5,T7|Trung binh|Nu|60000|Yeu Sinh hoc|false|
