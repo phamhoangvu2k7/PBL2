@@ -1,1 +1,3 @@
-Run: g++ main.cpp -o main.exe ; .\main.exe
+Run: 
+g++ src/code/main.cpp -o main.exe
+./main.exe
