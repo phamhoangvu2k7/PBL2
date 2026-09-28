@@ -116,6 +116,12 @@ bool HashTable<K, V>::find(K key, V& outValue) const {
 }
 
 template <typename K, typename V>
+bool HashTable<K, V>::containsKey(K key) const {
+  V tempVal;
+  return find(key, tempVal);
+}
+
+template <typename K, typename V>
 bool HashTable<K, V>::remove(K key) {
   int index = hashFunc(key);
   HashNode<K, V>* current = table[index];
@@ -147,6 +153,11 @@ int HashTable<K, V>::getSize() const {
 }
 
 template <typename K, typename V>
+bool HashTable<K, V>::isEmpty() const {
+  return size == 0;
+}
+
+template <typename K, typename V>
 void HashTable<K, V>::clear() {
   for (int i = 0; i < TABLE_SIZE; i++) {
     HashNode<K, V>* current = table[i];
@@ -158,6 +169,22 @@ void HashTable<K, V>::clear() {
     table[i] = nullptr;
   }
   size = 0;
+}
+
+template <typename K, typename V>
+void HashTable<K, V>::display() const {
+  cout << " Size: " << size << endl;
+  for (int i = 0; i < TABLE_SIZE; i++) {
+    if (table[i] != nullptr) {
+      cout << "Bucket [" << i << "]: ";
+      HashNode<K, V>* current = table[i];
+      while (current != nullptr) {
+        cout << "(" << current->key << " : " << current->value << ")";
+        current = current->next;
+      }
+      cout << endl;
+    }
+  }
 }
 
 #endif
