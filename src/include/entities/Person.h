@@ -6,50 +6,50 @@
 using namespace std;
 
 class Person {
-    protected:
-        string uid;
-        string fullName;
-        string address;
-        string gender;
-        string email;
-        string phone;
-        string dateOfBirth;
-        string role;
-        int age;
+protected:
+    string id;
+    string fullName;
+    string phone;
+    string email;
+    string address;
+    string gender;
+    string dateOfBirth;
+    string role;
 
-    public:
-        Person();
-        Person(string fullName, string address, string gender, string dateOfBirth, int age, string email, string phone);
-        Person(string uid, string fullName, string address, string gender, string dateOfBirth, int age, string email, string phone, string role);
-        virtual ~Person(); // virtual : hàm hủy con gọi trc khi gọi hàm hủy lớp cha
+public:
+    Person() : role("User") {}
 
-        // Getters
-        string getUid() const;
-        string getFullName() const;
-        string getAddress() const;
-        string getGender() const;
-        string getEmail() const;
-        string getPhone() const;
-        string getDateOfBirth() const;
-        string getRole() const;
-        int getAge() const;
+    Person(const string& id, const string& fullName, const string& phone,
+           const string& email, const string& address, const string& gender,
+           const string& dateOfBirth, const string& role = "User")
+        : id(id), fullName(fullName), phone(phone), email(email),
+          address(address), gender(gender), dateOfBirth(dateOfBirth), role(role) {}
 
-        // Setters
-        void setUid(const string &uid);
-        void setFullName(const string &fullName);
-        void setAddress(const string &address);
-        void setGender(const string &gender);
-        void setEmail(const string &email);
-        void setPhone(const string &phone);
-        void setDateOfBirth(const string &dateOfBirth);
-        void setAge(int age);
-        void setRole(const string &role);
+    virtual ~Person() {}
 
-        // Helper methods
-        void displayBasicInfo() const;
-        void updateContactInfo(const string &phone, const string &email, const string &address);
-        bool validateEmail(const string &email) const;
-        bool validatePhone(const string &phone) const;
+    string getId() const { return id; }
+    string getUid() const { return id; }
+    string getFullName() const { return fullName; }
+    string getPhone() const { return phone; }
+    string getEmail() const { return email; }
+    string getAddress() const { return address; }
+    string getGender() const { return gender; }
+    string getDateOfBirth() const { return dateOfBirth; }
+    string getRole() const { return role; }
+
+    void setId(const string& id) { this->id = id; }
+    void setFullName(const string& fullName) { this->fullName = fullName; }
+    void setPhone(const string& phone) { this->phone = phone; }
+    void setEmail(const string& email) { this->email = email; }
+    void setAddress(const string& address) { this->address = address; }
+    void setGender(const string& gender) { this->gender = gender; }
+    void setDateOfBirth(const string& dob) { this->dateOfBirth = dob; }
+    void setRole(const string& role) { this->role = role; }
+
+    virtual void display() const {
+        cout << "[" << role << "] ID: " << id << " | Ten: " << fullName 
+             << " | SDT: " << phone << " | Email: " << email << endl;
+    }
 };
 
 #endif

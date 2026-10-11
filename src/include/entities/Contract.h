@@ -1,41 +1,57 @@
+#ifndef CONTRACT_H
+#define CONTRACT_H
+
 #include <iostream>
+#include <string>
 using namespace std;
 
-class Contract{
-    protected:
-        string contractId;
-        string tutorId;
-        string studentId;
-        string startDate;
-        string endDate;
-        string subjects;
-        string status;
-        
-    public:
-        Contract() {}
-        Contract(string contractId, string tutorId, string studentId, string startDate, string endDate, string subjects, string status){
-            this->contractId = contractId;
-            this->tutorId = tutorId;
-            this->studentId = studentId;
-            this->startDate = startDate;
-            this->endDate = endDate;
-            this->subjects = subjects;
-            this->status = status;
-        }
+class Contract {
+ protected:
+  string contractId;
+  string tutorId;
+  string studentId;
+  string startDate;
+  string endDate;
+  string subjects;
+  string status;
 
-        string getContractId() const { return contractId; }
-        string getTutorId() const { return tutorId; }
-        string getStudentId() const { return studentId; }
-        string getStartDate() const { return startDate; }
-        string getEndDate() const { return endDate; }
-        string getSubjects() const { return subjects; }
-        string getStatus() const { return status; }
+ public:
+  Contract() : status("Pending") {}
 
-        void setContractId(const string &contractId) { this->contractId = contractId; }
-        void setTutorId(const string &tutorId) { this->tutorId = tutorId; }
-        void setStudentId(const string &studentId) { this->studentId = studentId; }
-        void setStartDate(const string &startDate) { this->startDate = startDate; }
-        void setEndDate(const string &endDate) { this->endDate = endDate; }
-        void setSubjects(const string &subjects) { this->subjects = subjects; }
-        void setStatus(const string &status) { this->status = status; }
+  Contract(const string& contractId, const string& tutorId,
+           const string& studentId, const string& startDate,
+           const string& endDate, const string& subjects, const string& status)
+      : contractId(contractId),
+        tutorId(tutorId),
+        studentId(studentId),
+        startDate(startDate),
+        endDate(endDate),
+        subjects(subjects),
+        status(status) {}
+
+  virtual ~Contract() {}
+
+  string getContractId() const { return contractId; }
+  string getTutorId() const { return tutorId; }
+  string getStudentId() const { return studentId; }
+  string getStartDate() const { return startDate; }
+  string getEndDate() const { return endDate; }
+  string getSubjects() const { return subjects; }
+  string getStatus() const { return status; }
+
+  void setContractId(const string& id) { this->contractId = id; }
+  void setTutorId(const string& id) { this->tutorId = id; }
+  void setStudentId(const string& id) { this->studentId = id; }
+  void setStartDate(const string& start) { this->startDate = start; }
+  void setEndDate(const string& end) { this->endDate = end; }
+  void setSubjects(const string& sub) { this->subjects = sub; }
+  void setStatus(const string& st) { this->status = st; }
+
+  virtual void display() const {
+    cout << "[Hop Dong] Ma: " << contractId << " | SV: " << studentId
+         << " | GS: " << tutorId << " | Mon: " << subjects
+         << " | Trang thai: " << status << endl;
+  }
 };
+
+#endif
