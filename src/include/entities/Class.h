@@ -19,48 +19,35 @@ private:
     double tuitionFee;
 
 public:
-    Class() : tuitionFee(0.0), status("Pending") {}
-
+    Class();
     Class(const string& classId, const string& contractId, const string& studentId,
           const string& tutorId, const string& subject, const string& schedule,
           const string& startDate, const string& endDate, const string& status,
-          double tuitionFee)
-        : classId(classId), contractId(contractId), studentId(studentId), tutorId(tutorId),
-          subject(subject), schedule(schedule), startDate(startDate), endDate(endDate),
-          status(status), tuitionFee(tuitionFee) {}
+          double tuitionFee);
 
-    string getClassId() const { return classId; }
-    string getContractId() const { return contractId; }
-    string getStudentId() const { return studentId; }
-    string getTutorId() const { return tutorId; }
-    string getSubject() const { return subject; }
-    string getSchedule() const { return schedule; }
-    string getStartDate() const { return startDate; }
-    string getEndDate() const { return endDate; }
-    string getStatus() const { return status; }
-    double getTuitionFee() const { return tuitionFee; }
+    string getClassId() const;
+    string getContractId() const;
+    string getStudentId() const;
+    string getTutorId() const;
+    string getSubject() const;
+    string getSchedule() const;
+    string getStartDate() const;
+    string getEndDate() const;
+    string getStatus() const;
+    double getTuitionFee() const;
 
-    void setClassId(const string& id) { this->classId = id; }
-    void setContractId(const string& id) { this->contractId = id; }
-    void setStudentId(const string& id) { this->studentId = id; }
-    void setTutorId(const string& id) { this->tutorId = id; }
-    void setSubject(const string& sub) { this->subject = sub; }
-    void setSchedule(const string& sch) { this->schedule = sch; }
-    void setStartDate(const string& start) { this->startDate = start; }
-    void setEndDate(const string& end) { this->endDate = end; }
-    void setStatus(const string& st) { this->status = st; }
-    void setTuitionFee(double fee) { this->tuitionFee = fee; }
+    void setClassId(const string& id);
+    void setContractId(const string& id);
+    void setStudentId(const string& id);
+    void setTutorId(const string& id);
+    void setSubject(const string& sub);
+    void setSchedule(const string& sch);
+    void setStartDate(const string& start);
+    void setEndDate(const string& end);
+    void setStatus(const string& st);
+    void setTuitionFee(double fee);
 
-    void display() const {
-        cout << "[Lop Hoc] Ma: " << classId 
-             << " | Hoc sinh: " << studentId 
-             << " | Gia su: " << tutorId 
-             << " | Mon: " << subject 
-             << " | Lich: " << schedule 
-             << " | Hoc phi: " << tuitionFee << " VND"
-             << " | Trang thai: " << status 
-             << endl;
-    }
+    void display() const;
 };
 
 #endif
