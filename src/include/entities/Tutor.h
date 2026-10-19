@@ -3,17 +3,41 @@
 
 #include "Person.h"
 
-class Tutor : public Person{
+class Tutor : public Person {
+private:
     string subjects;
+    string qualification;
+    int expYears;
+    double hourlyRate;
+    string schedule;
+    bool isAvailable;
+    string registeredClasses;
 
-    public:
-        Tutor(string fullName, string address, string gender, string dateOfBirth,  int age, string email, string phone, string subjects) : Person(fullName, address, gender, dateOfBirth,  age, email, phone) {
-            this->subjects = subjects;
-            this->role = "Tutor";
-        }
+public:
+    Tutor();
+    Tutor(const string& id, const string& fullName, const string& phone,
+          const string& email, const string& address, const string& gender,
+          const string& dateOfBirth, const string& subjects, const string& qualification,
+          int expYears, double hourlyRate, const string& schedule, bool isAvailable = true,
+          const string& registeredClasses = "");
 
-        string getSubjects() const { return subjects; }
-        void setSubjects(const string &subjects) { this->subjects = subjects; }
+    string getSubjects() const;
+    string getQualification() const;
+    int getExpYears() const;
+    double getHourlyRate() const;
+    string getSchedule() const;
+    bool getIsAvailable() const;
+    string getRegisteredClasses() const;
+
+    void setSubjects(const string& subjects);
+    void setQualification(const string& qualification);
+    void setExpYears(int exp);
+    void setHourlyRate(double rate);
+    void setSchedule(const string& schedule);
+    void setIsAvailable(bool available);
+    void setRegisteredClasses(const string& classes);
+
+    void display() const override;
 };
 
 #endif
