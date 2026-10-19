@@ -1,6 +1,6 @@
 #include "../../include/entities/Class.h"
 
-Class::Class() : tuitionFee(0.0), status("Pending") {}
+Class::Class() : status("Pending"), tuitionFee(0.0) {}
 
 Class::Class(const string& classId, const string& contractId,
              const string& studentId, const string& tutorId,
