@@ -37,10 +37,10 @@ int main() {
 
     // 2. GIA SU DUA RA CAC KHUNG GIO HOC THEO TUNG MON (MO CA HOC)
     cout << "\n>>> [2] GIA SU DANG KY MO CAC KHUNG GIO DAY (CA HOC):\n";
-    service.tutorOpenClass("GS001", "CL001", "Toan 12", "T2-T4 (18h-20h)", 150000, "01/11/2026", "31/01/2027");
-    service.tutorOpenClass("GS001", "CL002", "Toan 12", "T3-T5 (19h-21h)", 150000, "01/11/2026", "31/01/2027");
-    service.tutorOpenClass("GS002", "CL003", "Toan 11", "T7-CN (8h-10h)", 130000, "05/11/2026", "05/02/2027");
-    service.tutorOpenClass("GS001", "CL004", "Vat Ly 12", "T6-CN (18h-20h)", 140000, "01/11/2026", "31/01/2027");
+    service.tutorOpenClass("GS001", "Toan 12", "T2-T4 (18:00-20:00)", 150000, "01/11/2026", "31/01/2027");
+    service.tutorOpenClass("GS001", "Toan 12", "T3-T5 (19:00-21:00)", 150000, "01/11/2026", "31/01/2027");
+    service.tutorOpenClass("GS002", "Toan 11", "T7-CN (08:00-10:00)", 130000, "05/11/2026", "05/02/2027");
+    service.tutorOpenClass("GS001", "Vat Ly 12", "T6-CN (18:00-20:00)", 140000, "01/11/2026", "31/01/2027");
 
     // 3. HOC VIEN TIM KIEM KHUNG GIO HOC THEO MON
     cout << "\n>>> [3] HOC VIEN SV001 TIM KIEM MON \"Toan\":\n";
