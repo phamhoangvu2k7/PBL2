@@ -1,0 +1,2 @@
+AC001|admin|407908580|ADMIN|Admin
+AC002|student|2110877786|SV001|Student
