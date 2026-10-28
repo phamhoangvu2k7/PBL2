@@ -1,0 +1,4 @@
+GS001|Pham Hoang Vu|0934567890|vu@gmail.com|789 Nguyen Luong Bang|Nam|25/12/1998|Toan,Ly|Dai hoc Bach Khoa|3|150000.000000|T2,T4,T6|1||
+GS002|Le Thi Mai|0912345678|mai@gmail.com|102 Dien Bien Phu|Nu|10/05/1999|Toan,Hoa|Dai hoc Su Pham|2|130000.000000|T3,T5,T7|1||
+GS003|Le Minh Danh|0900000003|danhle@gmail.com||Nam||||0|0.000000||1||
+GS004|Le Minh Danh|0901173835|minhdanhdn@gmail.com|11/16 Nguyen Nhu Hanh|Nam|10/11/2007|Tin Hoc Chuyen||2|0.000000||1||-Nhất tỉnh HSG TIN,\n-HCĐ olympic MTTN,\n-Nhì tin học trẻ tp đà nẵng\n-Thành viên đội tuyển ICPC Miền trung, Quốc gia của bách khoa ĐN

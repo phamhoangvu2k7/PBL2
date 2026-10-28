@@ -1,0 +1,3 @@
+SV001|Nguyen Van An|12|0901234567|an@gmail.com|123 Le Loi, Da Nang|Nam|15/03/2007|Toan,Ly|T2,T4,T6|150000.000000|0|
+SV002|Tran Thi Binh|11|0909876543|binh@gmail.com|456 Tran Phu, Da Nang|Nu|20/08/2008|Toan,Hoa|T3,T5,T7|120000.000000|0|
+SV003|Le Bac Ky||0901173835|minhdanhdn@gmail.com||Nam||||0.000000|1|
