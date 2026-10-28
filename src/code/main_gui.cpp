@@ -4,20 +4,25 @@
 #include "../include/services/AuthService.h"
 #include "../include/services/CenterService.h"
 #include "../include/services/DemoData.h"
+#include "../include/repositories/AccountRepository.h"
 
 int main(int argc, char* argv[]) {
     QApplication app(argc, argv);
 
-    // auth, admin mac dinh la admin/admin123
-    AuthService auth;
+    // tang repository: moi repository doc / ghi 1 file txt
+    AccountRepository accountRepo("src/data/accounts.txt");
+    StudentRepository studentRepo("src/data/center_students.txt");
+    TutorRepository tutorRepo("src/data/center_tutors.txt");
+    ClassRepository classRepo("src/data/center_classes.txt");
+    ContractRepository contractRepo("src/data/center_contracts.txt");
+    accountRepo.load();
 
-    // du lieu dung chung cho moi cua so,
-    // doi tai khoan khong mat ca day / hop dong
-    CenterService center;
+    // tang service, dung chung cho moi cua so nen doi tai khoan khong mat du lieu
+    AuthService auth(accountRepo);  // admin mac dinh la admin/admin123
+    CenterService center(studentRepo, tutorRepo, classRepo, contractRepo);
 
-    // nap du lieu da luu, tu day moi thay doi tu ghi lai
-    // lan dau chua co file thi nap du lieu mau
-    if (!center.enablePersistence("src/data")) {
+    // nap du lieu da luu, lan dau chua co file thi nap du lieu mau
+    if (!center.loadData()) {
         seedDemoData(center);
     }
 

@@ -63,7 +63,7 @@ bool RecordFile::read(const string& path, vector<vector<string>>& records) {
     return true;
 }
 
-bool RecordFile::writeAtomic(const string& path, const vector<string>& lines) {
+bool RecordFile::write(const string& path, const vector<string>& lines) {
     string tmp = path + ".tmp";
     {
         ofstream f(tmp);

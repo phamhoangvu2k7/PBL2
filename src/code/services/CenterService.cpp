@@ -2,51 +2,18 @@
 #include "../../include/helper/Validator.h"
 #include "../../include/helper/IdGenerator.h"
 #include "../../include/helper/StringUtils.h"
-#include "../../include/helper/RecordFile.h"
-#include <algorithm>
-#include <fstream>
-#include <sstream>
-#include <cstdio>
-#include <cctype>
 
-CenterService::CenterService() {}
+CenterService::CenterService(StudentRepository& students, TutorRepository& tutors,
+                             ClassRepository& classes, ContractRepository& contracts)
+    : studentRepo(students), tutorRepo(tutors), classRepo(classes), contractRepo(contracts) {}
 
-CenterService::~CenterService() {
-    // giai phong hoc vien
-    Node<Student*>* curStudent = studentList.getHead();
-    while (curStudent != nullptr) {
-        delete curStudent->data;
-        curStudent = curStudent->next;
-    }
-    studentList.clear();
-    studentTable.clear();
-
-    // giai phong gia su
-    Node<Tutor*>* curTutor = tutorList.getHead();
-    while (curTutor != nullptr) {
-        delete curTutor->data;
-        curTutor = curTutor->next;
-    }
-    tutorList.clear();
-    tutorTable.clear();
-
-    // giai phong lop hoc
-    Node<Class*>* curClass = classList.getHead();
-    while (curClass != nullptr) {
-        delete curClass->data;
-        curClass = curClass->next;
-    }
-    classList.clear();
-    classTable.clear();
-
-    // giai phong hop dong
-    Node<Contract*>* curContract = contractList.getHead();
-    while (curContract != nullptr) {
-        delete curContract->data;
-        curContract = curContract->next;
-    }
-    contractList.clear();
-    contractTable.clear();
+bool CenterService::loadData() {
+    bool found = false;
+    found = studentRepo.load() || found;
+    found = tutorRepo.load() || found;
+    found = classRepo.load() || found;
+    found = contractRepo.load() || found;
+    return found;
 }
 
 namespace {
@@ -60,7 +27,7 @@ bool occupiesSchedule(const Class* c) {
 }  // namespace
 
 Class* CenterService::findTutorConflict(const string& tutorId, const Schedule& schedule) const {
-    Node<Class*>* cur = classList.getHead();
+    Node<Class*>* cur = classRepo.getAll().getHead();
     while (cur != nullptr) {
         Class* c = cur->data;
         if (c->getTutorId() == tutorId && occupiesSchedule(c)) {
@@ -75,7 +42,7 @@ Class* CenterService::findTutorConflict(const string& tutorId, const Schedule& s
 }
 
 Class* CenterService::findStudentConflict(const string& studentId, const Schedule& schedule) const {
-    Node<Class*>* cur = classList.getHead();
+    Node<Class*>* cur = classRepo.getAll().getHead();
     while (cur != nullptr) {
         Class* c = cur->data;
         // hoc vien chi bi chiem lich boi lop PENDING / ACTIVE
@@ -91,117 +58,6 @@ Class* CenterService::findStudentConflict(const string& studentId, const Schedul
     return nullptr;
 }
 
-// luu tru
-
-bool CenterService::saveAll() const {
-    if (dataDir.empty()) return false;
-
-    vector<string> lines;
-    Node<Student*>* sc = studentList.getHead();
-    while (sc != nullptr) {
-        Student* s = sc->data;
-        lines.push_back(RecordFile::join({s->getId(), s->getFullName(), s->getGrade(), s->getPhone(), s->getEmail(),
-                              s->getAddress(), s->getGender(), s->getDateOfBirth(), s->getSubjects(),
-                              s->getSchedule(), to_string(s->getBudget()),
-                              s->getHasTutor() ? "1" : "0", s->getRegisteredClasses()}));
-        sc = sc->next;
-    }
-    bool ok = RecordFile::writeAtomic(dataDir + "center_students.txt", lines);
-
-    lines.clear();
-    Node<Tutor*>* tc = tutorList.getHead();
-    while (tc != nullptr) {
-        Tutor* t = tc->data;
-        lines.push_back(RecordFile::join({t->getId(), t->getFullName(), t->getPhone(), t->getEmail(), t->getAddress(),
-                              t->getGender(), t->getDateOfBirth(), t->getSubjects(), t->getQualification(),
-                              to_string(t->getExpYears()), to_string(t->getHourlyRate()), t->getSchedule(),
-                              t->getIsAvailable() ? "1" : "0", t->getRegisteredClasses(), t->getAchievements()}));
-        tc = tc->next;
-    }
-    ok = RecordFile::writeAtomic(dataDir + "center_tutors.txt", lines) && ok;
-
-    lines.clear();
-    Node<Class*>* cc = classList.getHead();
-    while (cc != nullptr) {
-        Class* c = cc->data;
-        lines.push_back(RecordFile::join({c->getClassId(), c->getContractId(), c->getStudentId(), c->getTutorId(),
-                              c->getSubject(), c->getSchedule(), c->getStartDate(), c->getEndDate(),
-                              c->getStatus(), to_string(c->getTuitionFee())}));
-        cc = cc->next;
-    }
-    ok = RecordFile::writeAtomic(dataDir + "center_classes.txt", lines) && ok;
-
-    lines.clear();
-    Node<Contract*>* kc = contractList.getHead();
-    while (kc != nullptr) {
-        Contract* k = kc->data;
-        lines.push_back(RecordFile::join({k->getContractId(), k->getTutorId(), k->getStudentId(), k->getStartDate(),
-                              k->getEndDate(), k->getSubjects(), k->getStatus()}));
-        kc = kc->next;
-    }
-    ok = RecordFile::writeAtomic(dataDir + "center_contracts.txt", lines) && ok;
-
-    if (!ok) cerr << "[Loi] Khong the ghi du lieu vao thu muc: " << dataDir << "\n";
-    return ok;
-}
-
-void CenterService::autoSave() const {
-    if (dataDir.empty() || loading) return;
-    saveAll();
-}
-
-bool CenterService::enablePersistence(const string& dir) {
-    string d = dir;
-    if (!d.empty() && d.back() != '/' && d.back() != '\\') d += '/';
-
-    loading = true;
-    bool found = false;
-    vector<vector<string>> rows;
-
-    // hoc vien (addStudent da kiem tra va dong bo ID)
-    if (RecordFile::read(d + "center_students.txt", rows)) found = true;
-    for (const vector<string>& r : rows) {
-        if (r.size() < 13) continue;
-        Student* st = new Student(r[0], r[1], r[2], r[3], r[4], r[5], r[6], r[7], r[8], r[9],
-                                  StringUtils::toDouble(r[10]), r[11] == "1", r[12]);
-        if (!addStudent(st)) delete st;
-    }
-
-    rows.clear();
-    if (RecordFile::read(d + "center_tutors.txt", rows)) found = true;
-    for (const vector<string>& r : rows) {
-        if (r.size() < 14) continue;
-        Tutor* tu = new Tutor(r[0], r[1], r[2], r[3], r[4], r[5], r[6], r[7], r[8],
-                              StringUtils::toInt(r[9]), StringUtils::toDouble(r[10]), r[11], r[12] == "1", r[13],
-                              r.size() > 14 ? r[14] : "");
-        if (!addTutor(tu)) delete tu;
-    }
-
-    rows.clear();
-    if (RecordFile::read(d + "center_classes.txt", rows)) found = true;
-    for (const vector<string>& r : rows) {
-        if (r.size() < 10 || r[0].empty() || classTable.containsKey(r[0])) continue;
-        IdGenerator::syncFromExistingId(r[0]);
-        Class* c = new Class(r[0], r[1], r[2], r[3], r[4], r[5], r[6], r[7], r[8], StringUtils::toDouble(r[9]));
-        classList.push_back(c);
-        classTable.insert(c->getClassId(), c);
-    }
-
-    rows.clear();
-    if (RecordFile::read(d + "center_contracts.txt", rows)) found = true;
-    for (const vector<string>& r : rows) {
-        if (r.size() < 7 || r[0].empty() || contractTable.containsKey(r[0])) continue;
-        IdGenerator::syncFromExistingId(r[0]);
-        Contract* k = new Contract(r[0], r[1], r[2], r[3], r[4], r[5], r[6]);
-        contractList.push_back(k);
-        contractTable.insert(k->getContractId(), k);
-    }
-
-    loading = false;
-    dataDir = d;
-    return found;
-}
-
 // hoc vien & gia su
 
 bool CenterService::ensureStudentProfile(const string& id, const string& fullName,
@@ -211,7 +67,7 @@ bool CenterService::ensureStudentProfile(const string& id, const string& fullNam
         StringUtils::assign(outError, "Ma hoc vien rong!");
         return false;
     }
-    if (studentTable.containsKey(id)) return true;
+    if (studentRepo.findById(id) != nullptr) return true;
 
     Student* st = new Student(id, fullName, "", phone, email, "", "Nam", "", "", "", 0.0);
     if (!addStudent(st)) {
@@ -229,7 +85,7 @@ bool CenterService::ensureTutorProfile(const string& id, const string& fullName,
         StringUtils::assign(outError, "Ma gia su rong!");
         return false;
     }
-    if (tutorTable.containsKey(id)) return true;
+    if (tutorRepo.findById(id) != nullptr) return true;
 
     Tutor* tu = new Tutor(id, fullName, phone, email, "", "Nam", "", "", "", 0, 0.0, "");
     if (!addTutor(tu)) {
@@ -265,14 +121,11 @@ bool CenterService::addStudent(Student* student) {
         IdGenerator::syncFromExistingId(student->getId());
     }
 
-    if (studentTable.containsKey(student->getId())) {
+    if (studentRepo.findById(student->getId()) != nullptr) {
         cout << "[Loi] Ma hoc vien " << student->getId() << " da ton tai!\n";
         return false;
     }
-    studentList.push_back(student);
-    studentTable.insert(student->getId(), student);
-    autoSave();
-    return true;
+    return studentRepo.add(student);
 }
 
 bool CenterService::addTutor(Tutor* tutor) {
@@ -303,14 +156,11 @@ bool CenterService::addTutor(Tutor* tutor) {
         IdGenerator::syncFromExistingId(tutor->getId());
     }
 
-    if (tutorTable.containsKey(tutor->getId())) {
+    if (tutorRepo.findById(tutor->getId()) != nullptr) {
         cout << "[Loi] Ma gia su " << tutor->getId() << " da ton tai!\n";
         return false;
     }
-    tutorList.push_back(tutor);
-    tutorTable.insert(tutor->getId(), tutor);
-    autoSave();
-    return true;
+    return tutorRepo.add(tutor);
 }
 
 namespace {
@@ -356,7 +206,7 @@ bool CenterService::updateStudentProfile(const string& id, const StudentProfile&
     st->setSubjects(p.subjects);
     st->setSchedule(p.schedule);
     st->setBudget(p.budget);
-    autoSave();
+    studentRepo.update(st);
     return true;
 }
 
@@ -384,25 +234,21 @@ bool CenterService::updateTutorProfile(const string& id, const TutorProfile& p, 
     tu->setAchievements(p.achievements);
     tu->setSchedule(p.schedule);
     tu->setExpYears(p.expYears);
-    autoSave();
+    tutorRepo.update(tu);
     return true;
 }
 
 Student* CenterService::findStudentById(const string& id) const {
-    Student* res = nullptr;
-    if (studentTable.find(id, res)) return res;
-    return nullptr;
+    return studentRepo.findById(id);
 }
 
 Tutor* CenterService::findTutorById(const string& id) const {
-    Tutor* res = nullptr;
-    if (tutorTable.find(id, res)) return res;
-    return nullptr;
+    return tutorRepo.findById(id);
 }
 
 void CenterService::displayAllStudents() const {
-    cout << "\n===== DANH SACH HOC VIEN (" << studentList.getSize() << ") =====\n";
-    Node<Student*>* cur = studentList.getHead();
+    cout << "\n===== DANH SACH HOC VIEN (" << studentRepo.size() << ") =====\n";
+    Node<Student*>* cur = studentRepo.getAll().getHead();
     while (cur != nullptr) {
         cur->data->display();
         cur = cur->next;
@@ -410,8 +256,8 @@ void CenterService::displayAllStudents() const {
 }
 
 void CenterService::displayAllTutors() const {
-    cout << "\n===== DANH SACH GIA SU (" << tutorList.getSize() << ") =====\n";
-    Node<Tutor*>* cur = tutorList.getHead();
+    cout << "\n===== DANH SACH GIA SU (" << tutorRepo.size() << ") =====\n";
+    Node<Tutor*>* cur = tutorRepo.getAll().getHead();
     while (cur != nullptr) {
         cur->data->display();
         cur = cur->next;
@@ -424,7 +270,7 @@ bool CenterService::tutorOpenClass(const string& tutorId, const string& subject,
                                    const string& schedule, double tuitionFee,
                                    const string& startDate, const string& endDate,
                                    string* outClassId, string* outError) {
-    if (!tutorTable.containsKey(tutorId)) {
+    if (tutorRepo.findById(tutorId) == nullptr) {
         cout << "[Loi] Khong tim thay Gia su co ma " << tutorId << "!\n";
         StringUtils::assign(outError, "Khong tim thay Gia su co ma " + tutorId + "!");
         return false;
@@ -482,12 +328,10 @@ bool CenterService::tutorOpenClass(const string& tutorId, const string& subject,
 
     Class* newClass = new Class(classId, "", "", tutorId, subject, parsed.toString(),
                                 startDate, endDate, "AVAILABLE", tuitionFee);
-    classList.push_back(newClass);
-    classTable.insert(classId, newClass);
+    classRepo.add(newClass);
 
     cout << "[Thanh Cong] Gia su " << tutorId << " da mo thanh cong ca hoc "
          << classId << " (Mon: " << subject << " | Lich: " << schedule << ")\n";
-    autoSave();
     return true;
 }
 
@@ -496,7 +340,7 @@ bool CenterService::tutorOpenClass(const string& tutorId, const string& subject,
 void CenterService::displayAvailableClassesBySubject(const string& subject) const {
     cout << "\n===== KHUNG GIO HOC CON TRONG THEO MON: \"" << subject << "\" =====\n";
     int count = 0;
-    Node<Class*>* cur = classList.getHead();
+    Node<Class*>* cur = classRepo.getAll().getHead();
     while (cur != nullptr) {
         Class* c = cur->data;
         if (c->getStatus() == "AVAILABLE" && StringUtils::containsIgnoreCase(c->getSubject(), subject)) {
@@ -521,14 +365,14 @@ void CenterService::displayAvailableClassesBySubject(const string& subject) cons
 
 bool CenterService::studentBookClass(const string& studentId, const string& classId,
                                      string* outError) {
-    if (!studentTable.containsKey(studentId)) {
+    if (studentRepo.findById(studentId) == nullptr) {
         cout << "[Loi] Khong tim thay Hoc vien " << studentId << "!\n";
         StringUtils::assign(outError, "Khong tim thay Hoc vien " + studentId + "!");
         return false;
     }
 
-    Class* cls = nullptr;
-    if (!classTable.find(classId, cls) || cls == nullptr) {
+    Class* cls = classRepo.findById(classId);
+    if (cls == nullptr) {
         cout << "[Loi] Khong tim thay Lop hoc " << classId << "!\n";
         StringUtils::assign(outError, "Khong tim thay Lop hoc " + classId + "!");
         return false;
@@ -559,7 +403,7 @@ bool CenterService::studentBookClass(const string& studentId, const string& clas
 
     cout << "[Thanh Cong] Hoc vien " << studentId << " da dang ky ca hoc " << classId 
          << ". Ca hoc da tam khoa cho Gia su xac nhan!\n";
-    autoSave();
+    classRepo.update(cls);
     return true;
 }
 
@@ -568,7 +412,7 @@ bool CenterService::studentBookClass(const string& studentId, const string& clas
 void CenterService::displayPendingRequestsByTutor(const string& tutorId) const {
     cout << "\n===== YEU CAU CHO DUYET CUA GIA SU " << tutorId << " =====\n";
     int count = 0;
-    Node<Class*>* cur = classList.getHead();
+    Node<Class*>* cur = classRepo.getAll().getHead();
     while (cur != nullptr) {
         Class* c = cur->data;
         if (c->getTutorId() == tutorId && c->getStatus() == "PENDING") {
@@ -591,8 +435,8 @@ void CenterService::displayPendingRequestsByTutor(const string& tutorId) const {
 }
 
 bool CenterService::tutorApproveClass(const string& tutorId, const string& classId) {
-    Class* cls = nullptr;
-    if (!classTable.find(classId, cls) || cls == nullptr) {
+    Class* cls = classRepo.findById(classId);
+    if (cls == nullptr) {
         cout << "[Loi] Khong tim thay Lop hoc " << classId << "!\n";
         return false;
     }
@@ -612,8 +456,7 @@ bool CenterService::tutorApproveClass(const string& tutorId, const string& class
     Contract* newContract = new Contract(contractId, tutorId, cls->getStudentId(),
                                         cls->getStartDate(), cls->getEndDate(),
                                         cls->getSubject(), "Active");
-    contractList.push_back(newContract);
-    contractTable.insert(contractId, newContract);
+    contractRepo.add(newContract);
 
     // kich hoat lop
     cls->setContractId(contractId);
@@ -623,17 +466,18 @@ bool CenterService::tutorApproveClass(const string& tutorId, const string& class
     Student* st = findStudentById(cls->getStudentId());
     if (st != nullptr) {
         st->setHasTutor(true);
+        studentRepo.update(st);
     }
 
     cout << "[Thanh Cong] Gia su da phe duyet lop " << classId 
          << ". Hop dong " << contractId << " da duoc khoi tao thanh cong!\n";
-    autoSave();
+    classRepo.update(cls);
     return true;
 }
 
 bool CenterService::tutorRejectClass(const string& tutorId, const string& classId) {
-    Class* cls = nullptr;
-    if (!classTable.find(classId, cls) || cls == nullptr) {
+    Class* cls = classRepo.findById(classId);
+    if (cls == nullptr) {
         cout << "[Loi] Khong tim thay Lop hoc " << classId << "!\n";
         return false;
     }
@@ -654,7 +498,7 @@ bool CenterService::tutorRejectClass(const string& tutorId, const string& classI
 
     cout << "[Thong Bao] Gia su da tu choi yeu cau. Ca hoc " << classId 
          << " da duoc mo lai (AVAILABLE) cho hoc vien khac!\n";
-    autoSave();
+    classRepo.update(cls);
     return true;
 }
 
@@ -663,7 +507,7 @@ bool CenterService::tutorRejectClass(const string& tutorId, const string& classI
 void CenterService::displayClassesByStudent(const string& studentId) const {
     cout << "\n===== DANH SACH LOP CUA HOC VIEN: " << studentId << " =====\n";
     int count = 0;
-    Node<Class*>* cur = classList.getHead();
+    Node<Class*>* cur = classRepo.getAll().getHead();
     while (cur != nullptr) {
         Class* c = cur->data;
         if (c->getStudentId() == studentId) {
@@ -691,7 +535,7 @@ void CenterService::displayClassesByStudent(const string& studentId) const {
 void CenterService::displayClassesByTutor(const string& tutorId) const {
     cout << "\n===== DANH SACH LOP CUA GIA SU: " << tutorId << " =====\n";
     int count = 0;
-    Node<Class*>* cur = classList.getHead();
+    Node<Class*>* cur = classRepo.getAll().getHead();
     while (cur != nullptr) {
         Class* c = cur->data;
         if (c->getTutorId() == tutorId) {
@@ -721,20 +565,16 @@ void CenterService::displayClassesByTutor(const string& tutorId) const {
 // hop dong & tat ca lop
 
 Contract* CenterService::findContractById(const string& contractId) const {
-    Contract* res = nullptr;
-    if (contractTable.find(contractId, res)) return res;
-    return nullptr;
+    return contractRepo.findById(contractId);
 }
 
 Class* CenterService::findClassById(const string& classId) const {
-    Class* res = nullptr;
-    if (classTable.find(classId, res)) return res;
-    return nullptr;
+    return classRepo.findById(classId);
 }
 
 void CenterService::displayAllClasses() const {
-    cout << "\n===== TOAN BO DANH SACH LOP HOC (" << classList.getSize() << ") =====\n";
-    Node<Class*>* cur = classList.getHead();
+    cout << "\n===== TOAN BO DANH SACH LOP HOC (" << classRepo.size() << ") =====\n";
+    Node<Class*>* cur = classRepo.getAll().getHead();
     while (cur != nullptr) {
         cur->data->display();
         cur = cur->next;
@@ -742,8 +582,8 @@ void CenterService::displayAllClasses() const {
 }
 
 void CenterService::displayAllContracts() const {
-    cout << "\n===== TOAN BO DANH SACH HOP DONG (" << contractList.getSize() << ") =====\n";
-    Node<Contract*>* cur = contractList.getHead();
+    cout << "\n===== TOAN BO DANH SACH HOP DONG (" << contractRepo.size() << ") =====\n";
+    Node<Contract*>* cur = contractRepo.getAll().getHead();
     while (cur != nullptr) {
         cur->data->display();
         cur = cur->next;

@@ -4,12 +4,7 @@
 #include "../../include/helper/StringUtils.h"
 #include "../../include/helper/PasswordHasher.h"
 #include <iostream>
-#include <fstream>
-#include <sstream>
 using namespace std;
-
-// file luu tai khoan, tinh tu thu muc chay app
-const string AuthService::DEFAULT_ACCOUNTS_FILE = "src/data/accounts.txt";
 
 namespace {
 
@@ -21,98 +16,15 @@ bool fail(string* outError, const string& msg) {
 
 }  // namespace
 
-// constructor / destructor
 
-AuthService::AuthService(const string& accountsFile)
-    : currentUser(nullptr), accountsFile(accountsFile) {
-    // doc file truoc
-    loadFromFile();
-
+AuthService::AuthService(AccountRepository& accounts)
+    : accountRepo(accounts), currentUser(nullptr) {
     // chua co admin thi tao mac dinh
-    if (!accountTable.containsKey("admin")) {
+    if (accountRepo.findByUsername("admin") == nullptr) {
         string adminId  = IdGenerator::generateAccountId();
         string passHash = PasswordHasher::hash("admin123");
-        Account* adminAcc = new Account(adminId, "admin", passHash, "ADMIN", "Admin", "Quan tri vien");
-        accountList.push_back(adminAcc);
-        accountTable.insert("admin", adminAcc);
-        saveToFile();
+        accountRepo.add(new Account(adminId, "admin", passHash, "ADMIN", "Admin", "Quan tri vien"));
     }
-}
-
-AuthService::~AuthService() {
-    Node<Account*>* cur = accountList.getHead();
-    while (cur != nullptr) {
-        delete cur->data;
-        cur = cur->next;
-    }
-    accountList.clear();
-    accountTable.clear();
-}
-
-// luu / doc file
-
-// moi dong: accountId|username|hash|personId|role|fullName|phone|email
-// dong cu chi co 5 cot van doc duoc
-bool AuthService::saveToFile() const {
-    ofstream f(accountsFile);
-    if (!f.is_open()) {
-        cerr << "[Loi] Khong the mo file de luu tai khoan: " << accountsFile << "\n";
-        return false;
-    }
-    Node<Account*>* cur = accountList.getHead();
-    while (cur != nullptr) {
-        Account* a = cur->data;
-        f << a->getAccountId()   << "|"
-          << a->getUsername()    << "|"
-          << a->getPasswordHash()<< "|"
-          << a->getPersonId()    << "|"
-          << a->getRole()        << "|"
-          << a->getFullName()    << "|"
-          << a->getPhone()       << "|"
-          << a->getEmail()       << "\n";
-        cur = cur->next;
-    }
-    f.flush();
-    return f.good();
-}
-
-void AuthService::loadFromFile() {
-    ifstream f(accountsFile);
-    if (!f.is_open()) return;  // chua co file = lan chay dau
-
-    string line;
-    while (getline(f, line)) {
-        // file sua tay tren Windows co the co \r\n
-        if (!line.empty() && line.back() == '\r') line.pop_back();
-        if (line.empty()) continue;
-
-        // tach theo '|'
-        istringstream ss(line);
-        string accId, username, passHash, personId, role, fullName, phone, email;
-        if (!getline(ss, accId,     '|')) continue;
-        if (!getline(ss, username,  '|')) continue;
-        if (!getline(ss, passHash,  '|')) continue;
-        if (!getline(ss, personId,  '|')) continue;
-        if (!getline(ss, role,      '|')) continue;
-        getline(ss, fullName, '|'); 
-        getline(ss, phone,    '|');
-        getline(ss, email,    '|');
-
-        role = StringUtils::trim(role);
-        if (username.empty() || passHash.empty()) continue;
-        if (role != "Student" && role != "Tutor" && role != "Admin") continue;  // bo vai tro la
-        if (accountTable.containsKey(username)) continue;  // bo username trung
-
-        // dong bo bo dem ID
-        IdGenerator::syncFromExistingId(accId);
-        IdGenerator::syncFromExistingId(personId);
-
-        Account* acc = new Account(accId, username, passHash, personId, role,
-                                   fullName, phone, email);
-        accountList.push_back(acc);
-        accountTable.insert(username, acc);
-    }
-    f.close();
 }
 
 // dang ky
@@ -132,7 +44,7 @@ bool AuthService::registerAccount(const string& username, const string& password
     if (StringUtils::hasWhitespace(username) || StringUtils::containsAny(username, "|\r\n")) {
         return fail(outError, "Ten dang nhap khong duoc chua khoang trang hoac ky tu '|'!");
     }
-    if (accountTable.containsKey(username)) {
+    if (accountRepo.findByUsername(username) != nullptr) {
         return fail(outError, "Username '" + username + "' da ton tai!");
     }
     if (password.length() < 6) {
@@ -170,15 +82,9 @@ bool AuthService::registerAccount(const string& username, const string& password
     Account* newAcc = new Account(accId, username, passHash, personId, role,
                                   fullName, phone, email);
 
-    accountList.push_back(newAcc);
-    accountTable.insert(username, newAcc);
-
-    // luu file, loi thi hoan tac cho RAM va file khong lech
-    if (!saveToFile()) {
-        accountList.remove(newAcc);
-        accountTable.remove(username);
+    if (!accountRepo.add(newAcc)) {
         delete newAcc;
-        return fail(outError, "Khong the luu tai khoan vao file!");
+        return fail(outError, "Khong the tao tai khoan!");
     }
 
     cout << "[Thanh Cong] Tai khoan '" << username << "' (Role: " << role << ") da duoc tao!\n";
@@ -187,7 +93,7 @@ bool AuthService::registerAccount(const string& username, const string& password
 
 int AuthService::assignMissingPersonIds() {
     int count = 0;
-    Node<Account*>* cur = accountList.getHead();
+    Node<Account*>* cur = accountRepo.getAll().getHead();
     while (cur != nullptr) {
         Account* a = cur->data;
         if (a->getPersonId().empty()) {
@@ -201,15 +107,15 @@ int AuthService::assignMissingPersonIds() {
         }
         cur = cur->next;
     }
-    if (count > 0) saveToFile();
+    if (count > 0) accountRepo.save();
     return count;
 }
 
 // dang nhap
 
 bool AuthService::login(const string& username, const string& password) {
-    Account* acc = nullptr;
-    if (!accountTable.find(username, acc) || acc == nullptr) {
+    Account* acc = accountRepo.findByUsername(username);
+    if (acc == nullptr) {
         cout << "[Loi] Tai khoan '" << username << "' khong ton tai!\n";
         return false;
     }
@@ -253,5 +159,5 @@ bool AuthService::isTutor()   const { return currentUser && currentUser->getRole
 bool AuthService::isAdmin()   const { return currentUser && currentUser->getRole() == "Admin"; }
 
 bool AuthService::usernameExists(const string& username) const {
-    return accountTable.containsKey(username);
+    return accountRepo.findByUsername(username) != nullptr;
 }

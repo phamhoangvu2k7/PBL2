@@ -826,21 +826,17 @@ void MainWindow::populateActorCombos() {
     QSignalBlocker b2(tutorActorCombo);
 
     bookingStudentCombo->clear();
-    Node<Student*>* sCur = service.getStudentList().getHead();
-    while (sCur != nullptr) {
-        bookingStudentCombo->addItem(UiHelper::nameWithId(sCur->data->getFullName(), sCur->data->getId()),
-                                     UiHelper::toQString(sCur->data->getId()));
-        sCur = sCur->next;
+    for (Student* st : service.getStudents()) {
+        bookingStudentCombo->addItem(UiHelper::nameWithId(st->getFullName(), st->getId()),
+                                     UiHelper::toQString(st->getId()));
     }
     int si = bookingStudentCombo->findData(prevStudent);
     if (si >= 0) bookingStudentCombo->setCurrentIndex(si);
 
     tutorActorCombo->clear();
-    Node<Tutor*>* tCur = service.getTutorList().getHead();
-    while (tCur != nullptr) {
-        tutorActorCombo->addItem(UiHelper::nameWithId(tCur->data->getFullName(), tCur->data->getId()),
-                                 UiHelper::toQString(tCur->data->getId()));
-        tCur = tCur->next;
+    for (Tutor* tu : service.getTutors()) {
+        tutorActorCombo->addItem(UiHelper::nameWithId(tu->getFullName(), tu->getId()),
+                                 UiHelper::toQString(tu->getId()));
     }
     int ti = tutorActorCombo->findData(prevTutor);
     if (ti >= 0) tutorActorCombo->setCurrentIndex(ti);
@@ -921,12 +917,9 @@ void MainWindow::onSearchAvailableClasses() {
     QString subKey = searchSubjectInput->text().trimmed().toLower();
     availableClassesTable->setRowCount(0);
 
-    const DoublyLinkedList<Class*>& list = service.getClassList();
-    Node<Class*>* cur = list.getHead();
     int row = 0;
 
-    while (cur != nullptr) {
-        Class* c = cur->data;
+    for (Class* c : service.getClasses()) {
         if (c->getStatus() == "AVAILABLE") {
             QString cSub = UiHelper::toQString(c->getSubject()).toLower();
             if (subKey.isEmpty() || cSub.contains(subKey)) {
@@ -942,7 +935,6 @@ void MainWindow::onSearchAvailableClasses() {
                 row++;
             }
         }
-        cur = cur->next;
     }
     availableClassesTable->resizeRowsToContents();
 }
@@ -1078,10 +1070,8 @@ void MainWindow::refreshPendingRequests() {
     string tutorId = actingTutorId().toStdString();
     if (tutorId.empty()) return;
 
-    Node<Class*>* cur = service.getClassList().getHead();
     int row = 0;
-    while (cur != nullptr) {
-        Class* c = cur->data;
+    for (Class* c : service.getClasses()) {
         if (c->getTutorId() == tutorId && c->getStatus() == "PENDING") {
             Student* s = service.findStudentById(c->getStudentId());
             pendingRequestsTable->insertRow(row);
@@ -1094,7 +1084,6 @@ void MainWindow::refreshPendingRequests() {
             pendingRequestsTable->setItem(row, 6, UiHelper::tableCell("PENDING"));
             row++;
         }
-        cur = cur->next;
     }
     pendingRequestsTable->resizeRowsToContents();
 }
@@ -1117,10 +1106,8 @@ void MainWindow::refreshMyClasses() {
     }
 
     string me = m_currentPersonId.toStdString();
-    Node<Class*>* cur = service.getClassList().getHead();
     int row = 0;
-    while (cur != nullptr) {
-        Class* c = cur->data;
+    for (Class* c : service.getClasses()) {
         bool match = isAdmin ||
             (isStudent && c->getStudentId() == me && c->getStatus() != "AVAILABLE") ||
             (isTutor   && c->getTutorId()   == me);
@@ -1148,7 +1135,6 @@ void MainWindow::refreshMyClasses() {
             myClassesTable->setItem(row, 6, UiHelper::tableCell(UiHelper::toQString(c->getContractId())));
             row++;
         }
-        cur = cur->next;
     }
     myClassesTable->resizeRowsToContents();
 }
@@ -1165,10 +1151,8 @@ void MainWindow::refreshContracts() {
     if (!isAdmin && !isStudent && !isTutor) return;
 
     string me = m_currentPersonId.toStdString();
-    Node<Contract*>* cur = service.getContractList().getHead();
     int row = 0;
-    while (cur != nullptr) {
-        Contract* ct = cur->data;
+    for (Contract* ct : service.getContracts()) {
         bool match = isAdmin ||
             (isStudent && ct->getStudentId() == me) ||
             (isTutor   && ct->getTutorId()   == me);
@@ -1186,7 +1170,6 @@ void MainWindow::refreshContracts() {
             contractsTableWidget->setItem(row, 5, UiHelper::tableCell(UiHelper::toQString(ct->getStatus())));
             row++;
         }
-        cur = cur->next;
     }
 }
 
@@ -1195,10 +1178,8 @@ void MainWindow::refreshAllTables() {
 
     // bang hoc vien
     studentTableWidget->setRowCount(0);
-    Node<Student*>* sCur = service.getStudentList().getHead();
     int sRow = 0;
-    while (sCur != nullptr) {
-        Student* s = sCur->data;
+    for (Student* s : service.getStudents()) {
         studentTableWidget->insertRow(sRow);
         studentTableWidget->setItem(sRow, 0, UiHelper::tableCell(UiHelper::toQString(s->getId())));
         studentTableWidget->setItem(sRow, 1, UiHelper::tableCell(UiHelper::toQString(s->getFullName())));
@@ -1211,15 +1192,12 @@ void MainWindow::refreshAllTables() {
         studentTableWidget->setItem(sRow, 8, UiHelper::tableCell(UiHelper::toQString(s->getSubjects())));
         studentTableWidget->setItem(sRow, 9, UiHelper::tableCell(QString::number(s->getBudget(), 'f', 0)));
         sRow++;
-        sCur = sCur->next;
     }
 
     // bang gia su, hoc phi dat theo tung ca nen khong co cot
     tutorTableWidget->setRowCount(0);
-    Node<Tutor*>* tCur = service.getTutorList().getHead();
     int tRow = 0;
-    while (tCur != nullptr) {
-        Tutor* t = tCur->data;
+    for (Tutor* t : service.getTutors()) {
         tutorTableWidget->insertRow(tRow);
         tutorTableWidget->setItem(tRow, 0, UiHelper::tableCell(UiHelper::toQString(t->getId())));
         tutorTableWidget->setItem(tRow, 1, UiHelper::tableCell(UiHelper::toQString(t->getFullName())));
@@ -1233,7 +1211,6 @@ void MainWindow::refreshAllTables() {
         tutorTableWidget->setItem(tRow, 9, UiHelper::tableCell(QString::number(t->getExpYears()) + " nam"));
         tutorTableWidget->setItem(tRow, 10, UiHelper::tableCell(UiHelper::toQString(t->getAchievements()).replace('\n', ' ')));
         tRow++;
-        tCur = tCur->next;
     }
 
     // ca hoc, yeu cau, lop cua toi, hop dong

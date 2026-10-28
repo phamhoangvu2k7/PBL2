@@ -24,6 +24,11 @@ set(CORE_SOURCES
     src/code/helper/StringUtils.cpp
     src/code/helper/RecordFile.cpp
     src/code/helper/PasswordHasher.cpp
+    src/code/repositories/AccountRepository.cpp
+    src/code/repositories/StudentRepository.cpp
+    src/code/repositories/TutorRepository.cpp
+    src/code/repositories/ClassRepository.cpp
+    src/code/repositories/ContractRepository.cpp
     src/code/services/CenterService.cpp
     src/code/services/AuthService.cpp
     src/code/services/ProfileSync.cpp
@@ -55,6 +60,12 @@ set(HEADERS
     src/include/helper/RecordFile.h
     src/include/helper/PasswordHasher.h
     src/include/helper/UiHelper.h
+    src/include/repositories/Repository.h
+    src/include/repositories/AccountRepository.h
+    src/include/repositories/StudentRepository.h
+    src/include/repositories/TutorRepository.h
+    src/include/repositories/ClassRepository.h
+    src/include/repositories/ContractRepository.h
     src/include/services/CenterService.h
     src/include/services/AuthService.h
     src/include/services/ProfileSync.h
@@ -72,6 +83,7 @@ target_include_directories(pbl2_gui PRIVATE
     src/include/entities
     src/include/helper
     src/include/services
+    src/include/repositories
     src/include/ui
 )
 
@@ -80,3 +92,23 @@ target_link_libraries(pbl2_gui PRIVATE
     Qt6::Gui
     Qt6::Widgets
 )
+
+# ---- Unit test (khong can Qt): cmake -DBUILD_TESTS=ON ... ----
+option(BUILD_TESTS "Build unit tests" OFF)
+if(BUILD_TESTS)
+    add_executable(pbl2_tests
+        ${CORE_SOURCES}
+        tests/test_main.cpp
+        tests/RepositoryTest.cpp
+        tests/ServiceTest.cpp
+    )
+    target_include_directories(pbl2_tests PRIVATE
+        src/include
+        src/include/dsa
+        src/include/entities
+        src/include/helper
+        src/include/services
+        src/include/repositories
+        tests
+    )
+endif()
