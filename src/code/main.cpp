@@ -12,7 +12,7 @@ int main() {
 
     CenterService service;
 
-    // 1. THEM HOC VIEN VA GIA SU
+    // them hoc vien va gia su
     cout << "\n>>> [1] THEM HOC VIEN VA GIA SU VAO HE THONG:\n";
     Student* s1 = new Student("SV001", "Nguyen Van An", "12", "0901234567",
                               "an@gmail.com", "123 Le Loi, Da Nang", "Nam",
@@ -35,18 +35,18 @@ int main() {
     service.displayAllStudents();
     service.displayAllTutors();
 
-    // 2. GIA SU DUA RA CAC KHUNG GIO HOC THEO TUNG MON (MO CA HOC)
+    // gia su mo ca hoc
     cout << "\n>>> [2] GIA SU DANG KY MO CAC KHUNG GIO DAY (CA HOC):\n";
     service.tutorOpenClass("GS001", "Toan 12", "T2-T4 (18:00-20:00)", 150000, "01/11/2026", "31/01/2027");
     service.tutorOpenClass("GS001", "Toan 12", "T3-T5 (19:00-21:00)", 150000, "01/11/2026", "31/01/2027");
     service.tutorOpenClass("GS002", "Toan 11", "T7-CN (08:00-10:00)", 130000, "05/11/2026", "05/02/2027");
     service.tutorOpenClass("GS001", "Vat Ly 12", "T6-CN (18:00-20:00)", 140000, "01/11/2026", "31/01/2027");
 
-    // 3. HOC VIEN TIM KIEM KHUNG GIO HOC THEO MON
+    // hoc vien tim ca theo mon
     cout << "\n>>> [3] HOC VIEN SV001 TIM KIEM MON \"Toan\":\n";
     service.displayAvailableClassesBySubject("Toan");
 
-    // 4. HOC VIEN CHON KHUNG GIO -> KHUNG GIO BI AN KHOI NGUOI KHAC
+    // hoc vien dat ca, nguoi khac khong thay nua
     cout << "\n>>> [4] HOC VIEN SV001 DANG KY CA HOC CL001 (Toan 12 - T2-T4):\n";
     service.studentBookClass("SV001", "CL001");
 
@@ -54,15 +54,15 @@ int main() {
     cout << "   (Lop CL001 da duoc SV001 chon nen se KHONG con hien thi cho SV002!)\n";
     service.displayAvailableClassesBySubject("Toan");
 
-    // 5. GIA SU XEM DANH SACH CHO DUYET
+    // gia su xem yeu cau cho duyet
     cout << "\n>>> [5] GIA SU GS001 KIEM TRA CAC YEU CAU DANG CHO DUYET:\n";
     service.displayPendingRequestsByTutor("GS001");
 
-    // 6. GIA SU PHÊ DUYET -> TAO LOP ACTIVE VA SINH HOP DONG
+    // gia su duyet, tao lop va hop dong
     cout << "\n>>> [6] GIA SU GS001 XAC NHAN (APPROVE) LOP CL001:\n";
     service.tutorApproveClass("GS001", "CL001");
 
-    // 7. THU NGHIEM TU CHOI LOP (REJECT -> MO LAI KHUNG GIO)
+    // thu tu choi, ca mo lai
     cout << "\n>>> [7] THU NGHIEM DANG KY & TU CHOI (CL002):\n";
     service.studentBookClass("SV002", "CL002");
     cout << "   Gia su GS001 tu choi lop CL002:\n";
@@ -70,13 +70,13 @@ int main() {
     cout << "   Kiem tra lai: Ca CL002 (mon Toan) da duoc mo lai cho moi nguoi:\n";
     service.displayAvailableClassesBySubject("Toan");
 
-    // 8. XEM DANH SACH LOP CUA MINH (MY CLASSES)
+    // xem lop cua minh
     cout << "\n>>> [8] XEM DANH SACH LOP CUA TUNG NGUOI:\n";
     service.displayClassesByStudent("SV001");
     service.displayClassesByStudent("SV002");
     service.displayClassesByTutor("GS001");
 
-    // 9. XEM DANH SACH HOP DONG HE THONG
+    // xem hop dong
     cout << "\n>>> [9] DANH SACH HOP DONG DA DUOC KICH HOAT:\n";
     service.displayAllContracts();
 

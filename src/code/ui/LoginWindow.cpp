@@ -2,6 +2,7 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QFormLayout>
+#include <QGridLayout>
 #include <QApplication>
 #include <QScreen>
 #include <QFrame>
@@ -23,12 +24,12 @@ LoginWindow::LoginWindow(AuthService& auth, QWidget* parent)
 
 LoginWindow::~LoginWindow() {}
 
-// ======================== SETUP UI ========================
+// dung giao dien
 
 void LoginWindow::setupUi() {
     stackedWidget = new QStackedWidget(this);
-    stackedWidget->addWidget(createLoginPage());    // Index 0
-    stackedWidget->addWidget(createRegisterPage()); // Index 1
+    stackedWidget->addWidget(createLoginPage());
+    stackedWidget->addWidget(createRegisterPage());
     stackedWidget->setCurrentIndex(0);
 
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
@@ -43,7 +44,7 @@ QWidget* LoginWindow::createLoginPage() {
     layout->setContentsMargins(50, 40, 50, 30);
     layout->setSpacing(0);
 
-    // --- Header ---
+    // tieu de
     QLabel* titleLabel = new QLabel("HE THONG QUAN LY GIA SU");
     titleLabel->setAlignment(Qt::AlignCenter);
     titleLabel->setObjectName("titleLabel");
@@ -63,7 +64,7 @@ QWidget* LoginWindow::createLoginPage() {
     layout->addWidget(divider);
     layout->addSpacing(20);
 
-    // --- Form ---
+    // form
     QLabel* usernameLabel = new QLabel("Ten dang nhap:");
     usernameLabel->setObjectName("fieldLabel");
     loginUsernameInput = new QLineEdit();
@@ -99,7 +100,7 @@ QWidget* LoginWindow::createLoginPage() {
     layout->addWidget(loginErrorLabel);
     layout->addSpacing(14);
 
-    // --- Buttons ---
+    // nut
     btnLogin = new QPushButton("DANG NHAP");
     btnLogin->setObjectName("primaryBtn");
     btnLogin->setMinimumHeight(44);
@@ -136,13 +137,26 @@ QWidget* LoginWindow::createLoginPage() {
     return page;
 }
 
+// 1 o nhap: nhan tren, input duoi
+QWidget* LoginWindow::makeField(const QString& label, QWidget* input) {
+    QWidget* cell = new QWidget();
+    QVBoxLayout* v = new QVBoxLayout(cell);
+    v->setContentsMargins(0, 0, 0, 0);
+    v->setSpacing(4);
+    QLabel* l = new QLabel(label);
+    l->setObjectName("fieldLabel");
+    v->addWidget(l);
+    v->addWidget(input);
+    return cell;
+}
+
 QWidget* LoginWindow::createRegisterPage() {
     QWidget* page = new QWidget();
     QVBoxLayout* layout = new QVBoxLayout(page);
-    layout->setContentsMargins(50, 40, 50, 30);
+    layout->setContentsMargins(50, 30, 50, 24);
     layout->setSpacing(0);
 
-    // --- Header ---
+    // tieu de
     QLabel* titleLabel = new QLabel("TAO TAI KHOAN MOI");
     titleLabel->setAlignment(Qt::AlignCenter);
     titleLabel->setObjectName("titleLabel");
@@ -152,74 +166,76 @@ QWidget* LoginWindow::createRegisterPage() {
     divider->setObjectName("divider");
 
     layout->addWidget(titleLabel);
-    layout->addSpacing(12);
+    layout->addSpacing(10);
     layout->addWidget(divider);
-    layout->addSpacing(20);
+    layout->addSpacing(14);
 
-    // --- Form ---
-    QLabel* usernameLabel = new QLabel("Ten dang nhap:");
-    usernameLabel->setObjectName("fieldLabel");
+    // form
     regUsernameInput = new QLineEdit();
-    regUsernameInput->setPlaceholderText("Nhap ten dang nhap (khong chua khoang trang)");
+    regUsernameInput->setPlaceholderText("Khong chua khoang trang");
     regUsernameInput->setObjectName("inputField");
-    regUsernameInput->setMinimumHeight(40);
+    regUsernameInput->setMinimumHeight(38);
 
-    QLabel* passwordLabel = new QLabel("Mat khau (it nhat 6 ky tu):");
-    passwordLabel->setObjectName("fieldLabel");
+    regRoleCombo = new QComboBox();
+    regRoleCombo->addItems({"Student", "Tutor"});  // khong cho tu tao Admin
+    regRoleCombo->setObjectName("comboField");
+    regRoleCombo->setMinimumHeight(38);
+
+    regFullNameInput = new QLineEdit();
+    regFullNameInput->setPlaceholderText("VD: Nguyen Van A");
+    regFullNameInput->setObjectName("inputField");
+    regFullNameInput->setMinimumHeight(38);
+
+    regPhoneInput = new QLineEdit();
+    regPhoneInput->setPlaceholderText("VD: 0912345678");
+    regPhoneInput->setMaxLength(10);
+    regPhoneInput->setObjectName("inputField");
+    regPhoneInput->setMinimumHeight(38);
+
+    regEmailInput = new QLineEdit();
+    regEmailInput->setPlaceholderText("VD: abc@gmail.com");
+    regEmailInput->setObjectName("inputField");
+    regEmailInput->setMinimumHeight(38);
+
     regPasswordInput = new QLineEdit();
-    regPasswordInput->setPlaceholderText("Nhap mat khau...");
+    regPasswordInput->setPlaceholderText("It nhat 6 ky tu");
     regPasswordInput->setEchoMode(QLineEdit::Password);
     regPasswordInput->setObjectName("inputField");
-    regPasswordInput->setMinimumHeight(40);
+    regPasswordInput->setMinimumHeight(38);
 
-    QLabel* confirmLabel = new QLabel("Xac nhan mat khau:");
-    confirmLabel->setObjectName("fieldLabel");
     regConfirmInput = new QLineEdit();
-    regConfirmInput->setPlaceholderText("Nhap lai mat khau...");
+    regConfirmInput->setPlaceholderText("Nhap lai mat khau");
     regConfirmInput->setEchoMode(QLineEdit::Password);
     regConfirmInput->setObjectName("inputField");
-    regConfirmInput->setMinimumHeight(40);
+    regConfirmInput->setMinimumHeight(38);
 
-    QLabel* roleLabel = new QLabel("Vai tro:");
-    roleLabel->setObjectName("fieldLabel");
-    regRoleCombo = new QComboBox();
-    regRoleCombo->addItems({"Student", "Tutor"});  // Khong cho tu tao Admin
-    regRoleCombo->setObjectName("comboField");
-    regRoleCombo->setMinimumHeight(40);
+    QGridLayout* grid = new QGridLayout();
+    grid->setHorizontalSpacing(16);
+    grid->setVerticalSpacing(10);
+    grid->addWidget(makeField("Ten dang nhap:", regUsernameInput), 0, 0);
+    grid->addWidget(makeField("Vai tro:", regRoleCombo),           0, 1);
+    grid->addWidget(makeField("Ho va ten (hien thi):", regFullNameInput), 1, 0, 1, 2);
+    grid->addWidget(makeField("So dien thoai:", regPhoneInput),    2, 0);
+    grid->addWidget(makeField("Email:", regEmailInput),            2, 1);
+    grid->addWidget(makeField("Mat khau:", regPasswordInput),      3, 0);
+    grid->addWidget(makeField("Xac nhan mat khau:", regConfirmInput), 3, 1);
+    layout->addLayout(grid);
+    layout->addSpacing(10);
 
-    // Ma dinh danh duoc tu dong sinh - hien thi thong bao
+    // ma dinh danh tu dong cap
     QLabel* personIdNote = new QLabel("Ma dinh danh (Ma SV/GS) se duoc he thong tu dong cap.");
     personIdNote->setObjectName("noteLabel");
     personIdNote->setWordWrap(true);
-
-    // Khong co regPersonIdInput - dau duoc xoa khoi form
+    layout->addWidget(personIdNote);
+    layout->addSpacing(6);
 
     regErrorLabel = new QLabel("");
     regErrorLabel->setObjectName("errorLabel");
     regErrorLabel->setAlignment(Qt::AlignCenter);
     regErrorLabel->setWordWrap(true);
     regErrorLabel->setMinimumHeight(24);
-
-    layout->addWidget(usernameLabel);
-    layout->addSpacing(6);
-    layout->addWidget(regUsernameInput);
-    layout->addSpacing(12);
-    layout->addWidget(passwordLabel);
-    layout->addSpacing(6);
-    layout->addWidget(regPasswordInput);
-    layout->addSpacing(12);
-    layout->addWidget(confirmLabel);
-    layout->addSpacing(6);
-    layout->addWidget(regConfirmInput);
-    layout->addSpacing(12);
-    layout->addWidget(roleLabel);
-    layout->addSpacing(6);
-    layout->addWidget(regRoleCombo);
-    layout->addSpacing(8);
-    layout->addWidget(personIdNote);
-    layout->addSpacing(6);
     layout->addWidget(regErrorLabel);
-    layout->addSpacing(12);
+    layout->addSpacing(10);
 
     btnRegister = new QPushButton("TAO TAI KHOAN");
     btnRegister->setObjectName("primaryBtn");
@@ -231,8 +247,9 @@ QWidget* LoginWindow::createRegisterPage() {
     btnGoLogin->setCursor(Qt::PointingHandCursor);
 
     layout->addWidget(btnRegister);
-    layout->addSpacing(10);
+    layout->addSpacing(8);
     layout->addWidget(btnGoLogin, 0, Qt::AlignCenter);
+    layout->addStretch();
 
     connect(btnRegister,    &QPushButton::clicked, this, &LoginWindow::onRegister);
     connect(btnGoLogin,     &QPushButton::clicked, this, &LoginWindow::onShowLoginPage);
@@ -241,7 +258,7 @@ QWidget* LoginWindow::createRegisterPage() {
     return page;
 }
 
-// ======================== STYLES - THEME TRANG SANG ========================
+// style (theme sang)
 
 void LoginWindow::applyStyles() {
     setStyleSheet(R"(
@@ -351,7 +368,7 @@ void LoginWindow::applyStyles() {
     )");
 }
 
-// ======================== SLOTS ========================
+// slots
 
 void LoginWindow::onLogin() {
     loginErrorLabel->clear();
@@ -381,6 +398,9 @@ void LoginWindow::onRegister() {
     regErrorLabel->setStyleSheet("");
 
     QString username = regUsernameInput->text().trimmed();
+    QString fullName = regFullNameInput->text().trimmed();
+    QString phone    = regPhoneInput->text().trimmed();
+    QString email    = regEmailInput->text().trimmed();
     QString password = regPasswordInput->text();
     QString confirm  = regConfirmInput->text();
     QString role     = regRoleCombo->currentText();
@@ -399,10 +419,6 @@ void LoginWindow::onRegister() {
         regUsernameInput->selectAll();
         return;
     }
-    if (password.length() < 6) {
-        regErrorLabel->setText("Mat khau phai co it nhat 6 ky tu!");
-        return;
-    }
     if (password != confirm) {
         regErrorLabel->setText("Xac nhan mat khau khong khop!");
         regConfirmInput->clear();
@@ -410,17 +426,23 @@ void LoginWindow::onRegister() {
         return;
     }
 
-    // Goi registerAccount khong truyen personId - tu dong sinh ben trong
+    // AuthService kiem tra du lieu, tra ly do neu sai
+    // ma SV/GS cap sau khi dang ky
+    std::string error;
     bool ok = m_auth.registerAccount(
-        username.toStdString(), password.toStdString(), role.toStdString()
+        username.toStdString(), password.toStdString(), role.toStdString(),
+        fullName.toStdString(), phone.toStdString(), email.toStdString(), &error
     );
 
     if (ok) {
-        // Hien thi thanh cong va chuyen ve trang dang nhap
+        // bao thanh cong, ve trang dang nhap
         regErrorLabel->setStyleSheet("color: #16a34a; background-color: #f0fdf4; border: 1px solid #bbf7d0;");
-        regErrorLabel->setText("Tao tai khoan thanh cong! Ma dinh danh tu dong tao.");
+        regErrorLabel->setText("Tao tai khoan thanh cong! Ma dinh danh se duoc cap khi ban dang nhap.");
 
         regUsernameInput->clear();
+        regFullNameInput->clear();
+        regPhoneInput->clear();
+        regEmailInput->clear();
         regPasswordInput->clear();
         regConfirmInput->clear();
 
@@ -428,11 +450,10 @@ void LoginWindow::onRegister() {
         loginPasswordInput->clear();
         loginPasswordInput->setFocus();
 
-        // Chuyen ve trang dang nhap sau 1 giay
+        // sau 1 giay ve trang dang nhap
         QTimer::singleShot(1000, this, &LoginWindow::onShowLoginPage);
     } else {
-        // Truong hop con lai (vi du role sai - khong nen xay ra)
-        regErrorLabel->setText("Tao tai khoan that bai. Vui long thu lai.");
+        regErrorLabel->setText(QString::fromStdString(error));
     }
 }
 
@@ -446,10 +467,22 @@ void LoginWindow::onShowRegisterPage() {
     loginErrorLabel->clear();
     regErrorLabel->clear();
     stackedWidget->setCurrentIndex(1);
+    resizeForPage(1);
 }
 
 void LoginWindow::onShowLoginPage() {
     regErrorLabel->clear();
     loginErrorLabel->clear();
     stackedWidget->setCurrentIndex(0);
+    resizeForPage(0);
+}
+
+// trang dang ky nhieu o nen lon hon
+void LoginWindow::resizeForPage(int pageIndex) {
+    if (pageIndex == 1) setFixedSize(640, 640);
+    else                setFixedSize(480, 500);
+
+    QScreen* screen = QApplication::primaryScreen();
+    QRect sg = screen->availableGeometry();
+    move(sg.center() - rect().center());
 }

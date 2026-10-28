@@ -8,6 +8,7 @@
 #include <QPushButton>
 #include <QLabel>
 #include <QComboBox>
+#include <QGroupBox>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QHeaderView>
@@ -15,60 +16,87 @@
 #include "../services/CenterService.h"
 #include "../services/AuthService.h"
 
+class SchedulePicker;
+class QPlainTextEdit;
+
 class MainWindow : public QMainWindow {
     Q_OBJECT
 
 public:
-    // Guest mode: auth = nullptr
-    explicit MainWindow(AuthService* auth = nullptr, QWidget* parent = nullptr);
+    // service dung chung cho moi cua so
+    // auth null hoac chua dang nhap: che do Khach
+    explicit MainWindow(AuthService* auth, CenterService& service, QWidget* parent = nullptr);
     ~MainWindow();
 
 private:
-    CenterService service;
-    AuthService* m_auth;        // nullptr = chế độ Khách
-    QString m_currentRole;      // "Student", "Tutor", "Admin", "Guest"
-    QString m_currentPersonId;  // "SV001", "GS002", ...
+    CenterService& service;
+    AuthService* m_auth;  // null = Khach
+    QString m_currentRole;
+    QString m_currentPersonId;
+    QString m_currentName;  // ten that de hien thi
+    bool m_profileMissing;  // tai khoan chua co ho so
 
-    // Widgets chính
+    // widgets chinh
     QTabWidget* tabWidget;
 
-    // Tab 1: Quản lý Người dùng
+    // tab 1: quan ly nguoi dung (Admin)
     QTableWidget* studentTableWidget;
     QTableWidget* tutorTableWidget;
-    // ID được tự động sinh - không cần ô nhập
-    QLabel* stGeneratedIdLabel;   // Hiện mã vừa sinh: "SV001"
+    // ID tu sinh, khong can o nhap
+    QLabel* stGeneratedIdLabel;  // ma vua sinh
     QLineEdit* stNameInput;
     QLineEdit* stGradeInput;
     QLineEdit* stPhoneInput;
+    QLineEdit* stEmailInput;
     QLineEdit* stSubjectsInput;
     QLineEdit* stBudgetInput;
 
-    QLabel* tuGeneratedIdLabel;   // Hiện mã vừa sinh: "GS001"
+    QLabel* tuGeneratedIdLabel;  // ma vua sinh
     QLineEdit* tuNameInput;
     QLineEdit* tuPhoneInput;
+    QLineEdit* tuEmailInput;
     QLineEdit* tuSubjectsInput;
     QLineEdit* tuExpInput;
-    QLineEdit* tuRateInput;
 
-    // Tab 2: Tìm kiếm & Đăng ký
+    // tab 2: tim kiem & dang ky
     QLineEdit* searchSubjectInput;
     QTableWidget* availableClassesTable;
-    QLineEdit* bookingStudentIdInput;
     QLineEdit* selectedClassIdInput;
+    QLabel* bookingActorLabel;  // hoc vien dang dang nhap
+    QComboBox* bookingStudentCombo;  // chi Admin: chon hoc vien dang ky ho
+    QPushButton* btnBook;
 
-    // Tab 3: Gia sư mở ca & Phê duyệt
-    // openClassIdInput đã xóa - ID tự động sinh
-    QLineEdit* openTutorIdInput;
+    // tab 3: gia su mo ca & phe duyet
+    QLabel* tutorActorLabel;  // gia su dang dang nhap
+    QComboBox* tutorActorCombo;  // chi Admin: chon gia su thao tac ho
     QLineEdit* openSubjectInput;
-    QLineEdit* openScheduleInput;
+    SchedulePicker* schedulePicker;  // chon thu + gio, nhieu khung
     QLineEdit* openFeeInput;
-
-    QLineEdit* tutorIdFilterInput;
     QTableWidget* pendingRequestsTable;
 
-    // Tab 4: Lớp của tôi & Hợp đồng
-    QLineEdit* myUserIdInput;
-    QComboBox* myUserRoleCombo;
+    // tab 5: ho so ca nhan, sua duoc moi truong tru ma
+    QLabel* pfIdLabel;
+    QLineEdit* pfName;
+    QLineEdit* pfPhone;
+    QLineEdit* pfEmail;
+    QComboBox* pfGender;
+    QLineEdit* pfDob;
+    QLineEdit* pfAddress;
+    QLineEdit* pfSubjects;  // mon quan tam (hoc vien) / mon day (gia su)
+    QLineEdit* pfSchedule;  // lich ranh, ghi tu do
+    QLineEdit* pfGrade;  // chi hoc vien
+    QLineEdit* pfBudget;  // chi hoc vien
+    QLineEdit* pfQualification;  // chi gia su
+    QLineEdit* pfExp;  // chi gia su
+    QPlainTextEdit* pfAchievements;  // chi gia su
+    QPushButton* btnSaveProfile;
+    QPushButton* btnResetProfile;
+
+    QLabel* userInfoLabel;  // ten tren toolbar
+
+    // tab 4: lop cua toi & hop dong
+    QGroupBox* myClassesBox;
+    QGroupBox* contractsBox;
     QTableWidget* myClassesTable;
     QTableWidget* contractsTableWidget;
 
@@ -77,13 +105,25 @@ private:
     QWidget* createBookingTab();
     QWidget* createTutorTab();
     QWidget* createOverviewTab();
+    QWidget* createProfileTab();
     void applyStyles();
-    void seedSampleData();
-    // Áp dụng phân quyền Tab theo role
+    // phan quyen tab theo role
     void applyRolePermissions();
 
+    // ma SV / GS dang thao tac: chu tai khoan, hoac do Admin chon
+    QString actingStudentId() const;
+    QString actingTutorId() const;
+
+    void populateActorCombos();
+    QString identityText() const;
+    void showTutorProfile(const QString& tutorId);  // hop thoai xem ho so gia su
+    void refreshIdentity();  // cap nhat ten hien thi
+    void refreshPendingRequests();
+    void refreshMyClasses();
+    void refreshContracts();
+
 public:
-    // Slot đăng xuất (quay về LoginWindow)
+    // dang xuat, ve LoginWindow
     void onLogout();
 
 private slots:
@@ -94,10 +134,10 @@ private slots:
     void onAvailableClassSelected(int row, int col);
     void onBookClass();
     void onOpenClass();
-    void onFilterPendingRequests();
     void onApproveRequest();
     void onRejectRequest();
-    void onFilterMyClasses();
+    void loadProfileForm();  // nap ho so vao form, dung cho nut Hoan Tac
+    void onSaveProfile();
     void refreshAllTables();
 };
 

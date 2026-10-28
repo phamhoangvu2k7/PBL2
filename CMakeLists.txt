@@ -10,17 +10,30 @@ set(CMAKE_AUTOUIC ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets)
 
-set(SOURCES
+# Logic khong phu thuoc Qt (dung chung cho app va unit test)
+set(CORE_SOURCES
     src/code/entities/Person.cpp
     src/code/entities/Student.cpp
     src/code/entities/Tutor.cpp
     src/code/entities/Class.cpp
     src/code/entities/Contract.cpp
     src/code/entities/Account.cpp
+    src/code/entities/Schedule.cpp
     src/code/helper/Validator.cpp
     src/code/helper/IdGenerator.cpp
+    src/code/helper/StringUtils.cpp
+    src/code/helper/RecordFile.cpp
+    src/code/helper/PasswordHasher.cpp
     src/code/services/CenterService.cpp
     src/code/services/AuthService.cpp
+    src/code/services/ProfileSync.cpp
+    src/code/services/DemoData.cpp
+)
+
+set(SOURCES
+    ${CORE_SOURCES}
+    src/code/helper/UiHelper.cpp
+    src/code/ui/SchedulePicker.cpp
     src/code/ui/MainWindow.cpp
     src/code/ui/LoginWindow.cpp
     src/code/main_gui.cpp
@@ -35,12 +48,20 @@ set(HEADERS
     src/include/entities/Class.h
     src/include/entities/Contract.h
     src/include/entities/Account.h
+    src/include/entities/Schedule.h
     src/include/helper/Validator.h
     src/include/helper/IdGenerator.h
+    src/include/helper/StringUtils.h
+    src/include/helper/RecordFile.h
+    src/include/helper/PasswordHasher.h
+    src/include/helper/UiHelper.h
     src/include/services/CenterService.h
     src/include/services/AuthService.h
+    src/include/services/ProfileSync.h
+    src/include/services/DemoData.h
     src/include/ui/MainWindow.h
     src/include/ui/LoginWindow.h
+    src/include/ui/SchedulePicker.h
 )
 
 add_executable(pbl2_gui WIN32 ${SOURCES} ${HEADERS})

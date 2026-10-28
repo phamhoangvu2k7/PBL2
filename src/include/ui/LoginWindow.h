@@ -27,7 +27,7 @@ private:
 
     QStackedWidget* stackedWidget;
 
-    // -- Trang Dang Nhap --
+    // trang dang nhap
     QLineEdit*   loginUsernameInput;
     QLineEdit*   loginPasswordInput;
     QLabel*      loginErrorLabel;
@@ -35,11 +35,14 @@ private:
     QPushButton* btnGoRegister;
     QPushButton* btnGuest;
 
-    // -- Trang Dang Ky --
+    // trang dang ky
     QLineEdit*   regUsernameInput;
+    QLineEdit*   regFullNameInput;  // ten that
+    QLineEdit*   regPhoneInput;
+    QLineEdit*   regEmailInput;
     QLineEdit*   regPasswordInput;
     QLineEdit*   regConfirmInput;
-    // regPersonIdInput da xoa - he thong tu dong sinh ma dinh danh
+    // ma dinh danh tu sinh, khong co o nhap
     QComboBox*   regRoleCombo;
     QLabel*      regErrorLabel;
     QPushButton* btnRegister;
@@ -49,6 +52,8 @@ private:
     QWidget* createLoginPage();
     QWidget* createRegisterPage();
     void applyStyles();
+    void resizeForPage(int pageIndex);
+    QWidget* makeField(const QString& label, QWidget* input);
 
 private slots:
     void onLogin();

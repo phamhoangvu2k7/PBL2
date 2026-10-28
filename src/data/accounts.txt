@@ -1,2 +1,5 @@
-AC001|admin|407908580|ADMIN|Admin
-AC002|student|2110877786|SV001|Student
+AC001|admin|407908580|ADMIN|Admin|Quan tri vien||
+AC002|student|2110877786|SV001|Student|Nguyen Van An|0901234567|an@gmail.com
+AC003|DanhLe|2110877786|GS003|Tutor|Le Minh Danh|0900000003|danhle@gmail.com
+AC004|DanhLe123|2110877786|GS004|Tutor|Le Minh Danh|0901173835|minhdanhdn@gmail.com
+AC005|student1|2110877786|SV003|Student|Le Bac Ky|0901173835|minhdanhdn@gmail.com
