@@ -1,11 +1,12 @@
 #include "../../include/helper/Validator.h"
+#include "../../include/entities/Schedule.h"
 #include <cctype>
 #include <sstream>
 
-// ======================== PHỤ TRỢ ========================
+// ham phu tro
 
 bool Validator::parseTime(const string& time, int& hour, int& minute) {
-    // Định dạng mong đợi: "HH:MM" hoặc "H:MM"
+    // dang HH:MM hoac H:MM
     size_t colonPos = time.find(':');
     if (colonPos == string::npos || colonPos == 0 || colonPos >= time.length() - 1) {
         return false;
@@ -14,9 +15,10 @@ bool Validator::parseTime(const string& time, int& hour, int& minute) {
     string hourStr = time.substr(0, colonPos);
     string minStr = time.substr(colonPos + 1);
 
-    // Kiểm tra toàn ký tự số
-    for (char c : hourStr) if (!isdigit(c)) return false;
-    for (char c : minStr) if (!isdigit(c)) return false;
+    // toan so, toi da 2 chu so de stoi khong tran
+    if (hourStr.size() > 2 || minStr.size() > 2) return false;
+    for (char c : hourStr) if (!isdigit((unsigned char)c)) return false;
+    for (char c : minStr) if (!isdigit((unsigned char)c)) return false;
 
     hour = stoi(hourStr);
     minute = stoi(minStr);
@@ -24,7 +26,7 @@ bool Validator::parseTime(const string& time, int& hour, int& minute) {
 }
 
 bool Validator::parseDate(const string& date, int& day, int& month, int& year) {
-    // Định dạng: dd/mm/yyyy
+    // dang dd/mm/yyyy
     if (date.length() < 8 || date.length() > 10) return false;
 
     size_t slash1 = date.find('/');
@@ -59,86 +61,31 @@ int Validator::daysInMonth(int month, int year) {
     return 0;
 }
 
-// ======================== KIỂM TRA LỊCH HỌC ========================
+// kiem tra lich hoc
 
 bool Validator::isValidTime(const string& time) {
     int hour, minute;
     if (!parseTime(time, hour, minute)) return false;
     if (hour < 0 || hour > 23) return false;
-    // Phút chỉ được phép là 00, 15, 30, 45
+    // phut chi 00, 15, 30, 45
     if (minute != 0 && minute != 15 && minute != 30 && minute != 45) return false;
     return true;
 }
 
 bool Validator::isValidSchedule(const string& schedule) {
-    // Tìm cặp ngoặc chứa thời gian: "(HH:MM-HH:MM)"
-    size_t openParen = schedule.find('(');
-    size_t closeParen = schedule.find(')');
-    if (openParen == string::npos || closeParen == string::npos || closeParen <= openParen + 1) {
-        return false;
-    }
-
-    string timeRange = schedule.substr(openParen + 1, closeParen - openParen - 1);
-
-    // Tách giờ bắt đầu và kết thúc qua dấu '-'
-    size_t dashPos = timeRange.find('-');
-    if (dashPos == string::npos) return false;
-
-    string startTime = timeRange.substr(0, dashPos);
-    string endTime = timeRange.substr(dashPos + 1);
-
-    if (!isValidTime(startTime) || !isValidTime(endTime)) return false;
-
-    // Giờ bắt đầu phải trước giờ kết thúc
-    int sh, sm, eh, em;
-    parseTime(startTime, sh, sm);
-    parseTime(endTime, eh, em);
-
-    int startMinutes = sh * 60 + sm;
-    int endMinutes = eh * 60 + em;
-    if (endMinutes <= startMinutes) return false;
-
-    return true;
+    // 1 hoac nhieu khung, ngan cach bang ';'
+    Schedule parsed;
+    return Schedule::parse(schedule, parsed, nullptr);
 }
 
 string Validator::getScheduleError(const string& schedule) {
-    if (schedule.empty()) return "Lich hoc khong duoc de trong!";
-
-    size_t openParen = schedule.find('(');
-    size_t closeParen = schedule.find(')');
-    if (openParen == string::npos || closeParen == string::npos) {
-        return "Dinh dang lich hoc sai! VD dung: T2-T4 (18:00-20:00)";
-    }
-
-    string timeRange = schedule.substr(openParen + 1, closeParen - openParen - 1);
-    size_t dashPos = timeRange.find('-');
-    if (dashPos == string::npos) {
-        return "Thieu dau '-' giua gio bat dau va gio ket thuc!";
-    }
-
-    string startTime = timeRange.substr(0, dashPos);
-    string endTime = timeRange.substr(dashPos + 1);
-
-    if (!isValidTime(startTime)) {
-        return "Gio bat dau '" + startTime + "' khong hop le!\n"
-               "Phut phai la 00, 15, 30 hoac 45 (VD: 18:00, 19:15, 20:30)";
-    }
-    if (!isValidTime(endTime)) {
-        return "Gio ket thuc '" + endTime + "' khong hop le!\n"
-               "Phut phai la 00, 15, 30 hoac 45 (VD: 18:00, 19:15, 20:30)";
-    }
-
-    int sh, sm, eh, em;
-    parseTime(startTime, sh, sm);
-    parseTime(endTime, eh, em);
-    if (eh * 60 + em <= sh * 60 + sm) {
-        return "Gio ket thuc phai lon hon gio bat dau!";
-    }
-
-    return "";
+    Schedule parsed;
+    string err;
+    if (Schedule::parse(schedule, parsed, &err)) return "";
+    return err;
 }
 
-// ======================== KIỂM TRA THÔNG TIN CÁ NHÂN ========================
+// kiem tra thong tin ca nhan
 
 bool Validator::isValidPhone(const string& phone) {
     if (phone.length() != 10) return false;
@@ -160,16 +107,19 @@ string Validator::getPhoneError(const string& phone) {
 }
 
 bool Validator::isValidEmail(const string& email) {
-    if (email.empty()) return true; // Email là tùy chọn
+    if (email.empty()) return true;  // email co the de trong
     size_t atPos = email.find('@');
     if (atPos == string::npos || atPos == 0) return false;
-    size_t dotPos = email.find('.', atPos + 1);
-    if (dotPos == string::npos || dotPos == email.length() - 1) return false;
+    if (email.find('@', atPos + 1) != string::npos) return false;  // chi 1 dau @
+    if (email.find(' ') != string::npos) return false;
+    string domain = email.substr(atPos + 1);
+    if (domain[0] == '.' || domain.back() == '.' || domain.find("..") != string::npos) return false;
+    if (domain.find('.') == string::npos) return false;
     return true;
 }
 
 string Validator::getEmailError(const string& email) {
-    if (email.empty()) return ""; // Email là tùy chọn
+    if (email.empty()) return "";  // email co the de trong
     size_t atPos = email.find('@');
     if (atPos == string::npos || atPos == 0) return "Email phai chua ky tu '@'!";
     size_t dotPos = email.find('.', atPos + 1);
@@ -186,6 +136,14 @@ bool Validator::isValidDate(const string& date) {
     if (m < 1 || m > 12) return false;
     if (d < 1 || d > daysInMonth(m, y)) return false;
     return true;
+}
+
+int Validator::compareDates(const string& a, const string& b) {
+    int d1 = 0, m1 = 0, y1 = 0, d2 = 0, m2 = 0, y2 = 0;
+    if (!parseDate(a, d1, m1, y1) || !parseDate(b, d2, m2, y2)) return 0;
+    int ka = y1 * 10000 + m1 * 100 + d1;
+    int kb = y2 * 10000 + m2 * 100 + d2;
+    return ka < kb ? -1 : (ka > kb ? 1 : 0);
 }
 
 string Validator::getDateError(const string& date) {
@@ -206,7 +164,7 @@ bool Validator::isValidName(const string& name) {
     if (name.empty()) return false;
     for (char c : name) {
         if (!isalpha(c) && c != ' ' && (unsigned char)c < 128) {
-            // Cho phép ký tự Unicode (UTF-8 byte > 127) và khoảng trắng
+            // cho phep chu co dau (byte > 127) va dau cach
             return false;
         }
     }
@@ -222,7 +180,7 @@ bool Validator::isValidGender(const string& gender) {
     return gender == "Nam" || gender == "Nu";
 }
 
-// ======================== KIỂM TRA DỮ LIỆU NGHIỆP VỤ ========================
+// kiem tra du lieu nghiep vu
 
 bool Validator::isValidFee(double fee) {
     return fee > 0;

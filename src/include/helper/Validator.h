@@ -6,27 +6,31 @@ using namespace std;
 
 class Validator {
 public:
-    // --- Kiểm tra Lịch học / Khung giờ ---
-    // Kiểm tra giờ hợp lệ "HH:MM" với MM ∈ {00, 15, 30, 45}
+    // lich hoc
+    // gio HH:MM, phut 00 / 15 / 30 / 45
     static bool isValidTime(const string& time);
 
-    // Kiểm tra chuỗi lịch VD: "T2-T4 (18:00-20:00)"
-    // Giờ bắt đầu < Giờ kết thúc, cả 2 phải chẵn phút
+    // lich nhieu khung, VD "T2,T4 (19:00-21:00); T6 (08:00-10:00)"
+    // dang cu "T2-T4 (18:00-20:00)" van hop le, xu ly boi Schedule
+    // bat dau < ket thuc, cac khung khong trung nhau
     static bool isValidSchedule(const string& schedule);
 
-    // --- Kiểm tra Thông tin cá nhân ---
-    static bool isValidPhone(const string& phone);       // 10 chữ số, bắt đầu bằng 0
-    static bool isValidEmail(const string& email);        // Chứa @ và dấu .
-    static bool isValidDate(const string& date);          // dd/mm/yyyy, ngày hợp lệ
-    static bool isValidName(const string& name);          // Không rỗng, chỉ chữ cái và khoảng trắng
-    static bool isValidGender(const string& gender);      // "Nam" hoặc "Nu"
+    // thong tin ca nhan
+    static bool isValidPhone(const string& phone);  // 10 so, dau 0
+    static bool isValidEmail(const string& email);  // co @ va dau .
+    static bool isValidDate(const string& date);  // dd/mm/yyyy
+    static bool isValidName(const string& name);  // chi chu cai va dau cach
+    static bool isValidGender(const string& gender);  // Nam hoac Nu
 
-    // --- Kiểm tra Dữ liệu nghiệp vụ ---
+    // du lieu nghiep vu
     static bool isValidFee(double fee);                   // fee > 0
     static bool isValidExpYears(int years);               // years >= 0
-    static bool isNotEmpty(const string& str);            // Chuỗi không rỗng (sau khi trim)
+    static bool isNotEmpty(const string& str);  // khong rong sau khi trim
 
-    // --- Hàm trả về thông báo lỗi chi tiết ---
+    // so sanh 2 ngay hop le dd/mm/yyyy: -1 (a truoc b), 0 (bang), 1 (a sau b)
+    static int compareDates(const string& a, const string& b);
+
+    // thong bao loi
     static string getScheduleError(const string& schedule);
     static string getPhoneError(const string& phone);
     static string getEmailError(const string& email);
@@ -34,13 +38,13 @@ public:
     static string getNameError(const string& name);
 
 private:
-    // Phụ trợ: tách giờ phút từ chuỗi "HH:MM"
+    // tach gio phut
     static bool parseTime(const string& time, int& hour, int& minute);
-    // Phụ trợ: tách ngày/tháng/năm từ "dd/mm/yyyy"
+    // tach ngay thang nam
     static bool parseDate(const string& date, int& day, int& month, int& year);
-    // Phụ trợ: kiểm tra năm nhuận
+    // nam nhuan
     static bool isLeapYear(int year);
-    // Phụ trợ: số ngày tối đa trong tháng
+    // so ngay trong thang
     static int daysInMonth(int month, int year);
 };
 
