@@ -10,25 +10,23 @@ public:
     // gio HH:MM, phut 00 / 15 / 30 / 45
     static bool isValidTime(const string& time);
 
-    // lich nhieu khung, VD "T2,T4 (19:00-21:00); T6 (08:00-10:00)"
-    // dang cu "T2-T4 (18:00-20:00)" van hop le, xu ly boi Schedule
-    // bat dau < ket thuc, cac khung khong trung nhau
+
     static bool isValidSchedule(const string& schedule);
 
-    // thong tin ca nhan
-    static bool isValidPhone(const string& phone);  // 10 so, dau 0
-    static bool isValidEmail(const string& email);  // co @ va dau .
-    static bool isValidDate(const string& date);  // dd/mm/yyyy
-    static bool isValidName(const string& name);  // chi chu cai va dau cach
-    static bool isValidGender(const string& gender);  // Nam hoac Nu
+    static bool isValidPhone(const string& phone); 
+    static bool isValidEmail(const string& email);  
+    static bool isValidDate(const string& date);  
+    static bool isValidName(const string& name);  
+    static bool isValidGender(const string& gender);
 
-    // du lieu nghiep vu
     static bool isValidFee(double fee);                   // fee > 0
     static bool isValidExpYears(int years);               // years >= 0
     static bool isNotEmpty(const string& str);  // khong rong sau khi trim
 
     // so sanh 2 ngay hop le dd/mm/yyyy: -1 (a truoc b), 0 (bang), 1 (a sau b)
     static int compareDates(const string& a, const string& b);
+    // ngay hien tai dd/mm/yyyy
+    static string today();
 
     // thong bao loi
     static string getScheduleError(const string& schedule);

@@ -2,6 +2,7 @@
 #include "../../include/ui/LoginWindow.h"
 #include "../../include/ui/SchedulePicker.h"
 #include "../../include/services/ProfileSync.h"
+#include "../../include/services/AdminService.h"
 #include "../../include/helper/Validator.h"
 #include "../../include/helper/UiHelper.h"
 #include <QApplication>
@@ -17,6 +18,8 @@
 #include <QMenuBar>
 #include <QToolBar>
 #include <QAction>
+#include <QInputDialog>
+#include <QColor>
 
 MainWindow::MainWindow(AuthService* auth, CenterService& svc, QWidget* parent)
     : QMainWindow(parent), service(svc), m_auth(auth), m_currentRole("Guest"),
@@ -307,7 +310,11 @@ QWidget* MainWindow::createUsersTab() {
     studentTableWidget->horizontalHeader()->setStretchLastSection(true);
     studentTableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
     studentTableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    studentTableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
     v1->addWidget(studentTableWidget);
+    QPushButton* btnDeleteSt = new QPushButton("Xoa Hoc Vien");
+    btnDeleteSt->setObjectName("btnDanger");
+    v1->addWidget(btnDeleteSt, 0, Qt::AlignRight);
     rightLayout->addWidget(tableStBox);
 
     QGroupBox* tableTuBox = new QGroupBox("Danh Sach Gia Su");
@@ -320,7 +327,11 @@ QWidget* MainWindow::createUsersTab() {
     tutorTableWidget->horizontalHeader()->setStretchLastSection(true);
     tutorTableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
     tutorTableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    tutorTableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
     v2->addWidget(tutorTableWidget);
+    QPushButton* btnDeleteTu = new QPushButton("Xoa Gia Su");
+    btnDeleteTu->setObjectName("btnDanger");
+    v2->addWidget(btnDeleteTu, 0, Qt::AlignRight);
     rightLayout->addWidget(tableTuBox);
 
     mainLayout->addLayout(leftLayout, 38);
@@ -328,6 +339,8 @@ QWidget* MainWindow::createUsersTab() {
 
     connect(btnAddSt, &QPushButton::clicked, this, &MainWindow::onAddStudent);
     connect(btnAddTu, &QPushButton::clicked, this, &MainWindow::onAddTutor);
+    connect(btnDeleteSt, &QPushButton::clicked, this, &MainWindow::onDeleteStudent);
+    connect(btnDeleteTu, &QPushButton::clicked, this, &MainWindow::onDeleteTutor);
 
     return tab;
 }
@@ -514,9 +527,25 @@ QWidget* MainWindow::createOverviewTab() {
     myClassesTable->setHorizontalHeaderLabels({"Ma Lop", "Mon Hoc", "Lich Hoc", "Hoc Phi", "Doi Tac", "Trang Thai", "Ma Hop Dong"});
     myClassesTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     myClassesTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    myClassesTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+    myClassesTable->setSelectionMode(QAbstractItemView::SingleSelection);
     myClassesTable->setWordWrap(true);
     vMy->addWidget(myClassesTable);
+
+    QHBoxLayout* hClassActions = new QHBoxLayout();
+    btnDeleteClass = new QPushButton("Xoa Lop Trong");
+    btnDeleteClass->setObjectName("btnDanger");
+    btnCancelBooking = new QPushButton("Rut Dang Ky");
+    btnCancelBooking->setObjectName("btnDanger");
+    hClassActions->addStretch();
+    hClassActions->addWidget(btnDeleteClass);
+    hClassActions->addWidget(btnCancelBooking);
+    vMy->addLayout(hClassActions);
     layout->addWidget(myClassesBox);
+
+    connect(btnDeleteClass,   &QPushButton::clicked, this, &MainWindow::onDeleteClass);
+    connect(btnCancelBooking, &QPushButton::clicked, this, &MainWindow::onCancelBooking);
+    connect(myClassesTable, &QTableWidget::itemSelectionChanged, this, &MainWindow::updateClassActions);
 
     connect(myClassesTable, &QTableWidget::cellClicked, this, [this](int row, int col) {
         if (col != 4 || m_currentRole != "Student") return;
@@ -527,12 +556,37 @@ QWidget* MainWindow::createOverviewTab() {
     contractsBox = new QGroupBox("Hop Dong Cua Toi");
     QVBoxLayout* vCt = new QVBoxLayout(contractsBox);
     contractsTableWidget = new QTableWidget();
-    contractsTableWidget->setColumnCount(6);
-    contractsTableWidget->setHorizontalHeaderLabels({"Ma Hop Dong", "Ma Hoc Vien", "Ma Gia Su", "Mon Hoc", "Lich Trinh", "Trang Thai"});
+    contractsTableWidget->setColumnCount(8);
+    contractsTableWidget->setHorizontalHeaderLabels({"Ma Hop Dong", "Ma Hoc Vien", "Ma Gia Su", "Mon Hoc", "Lich Trinh",
+                                                     "Trang Thai", "Yeu Cau Boi", "Ly Do Ket Thuc"});
     contractsTableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     contractsTableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    contractsTableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
+    contractsTableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
     vCt->addWidget(contractsTableWidget);
+
+    QHBoxLayout* hContractActions = new QHBoxLayout();
+    btnRequestEnd = new QPushButton("Yeu Cau Ket Thuc");
+    btnRequestEnd->setObjectName("btnDanger");
+    btnConfirmEnd = new QPushButton("Dong Y Ket Thuc");
+    btnConfirmEnd->setObjectName("btnSuccess");
+    btnCancelEnd = new QPushButton("Tu Choi Ket Thuc");
+    btnCancelEnd->setObjectName("btnSecondary");
+    btnAdminEnd = new QPushButton("Ket Thuc Ngay (Admin)");
+    btnAdminEnd->setObjectName("btnDanger");
+    hContractActions->addStretch();
+    hContractActions->addWidget(btnRequestEnd);
+    hContractActions->addWidget(btnConfirmEnd);
+    hContractActions->addWidget(btnCancelEnd);
+    hContractActions->addWidget(btnAdminEnd);
+    vCt->addLayout(hContractActions);
     layout->addWidget(contractsBox);
+
+    connect(btnRequestEnd, &QPushButton::clicked, this, &MainWindow::onRequestEndContract);
+    connect(btnConfirmEnd, &QPushButton::clicked, this, &MainWindow::onConfirmEndContract);
+    connect(btnCancelEnd,  &QPushButton::clicked, this, &MainWindow::onCancelEndRequest);
+    connect(btnAdminEnd,   &QPushButton::clicked, this, &MainWindow::onAdminEndContract);
+    connect(contractsTableWidget, &QTableWidget::itemSelectionChanged, this, &MainWindow::updateContractActions);
 
     return tab;
 }
@@ -826,21 +880,17 @@ void MainWindow::populateActorCombos() {
     QSignalBlocker b2(tutorActorCombo);
 
     bookingStudentCombo->clear();
-    Node<Student*>* sCur = service.getStudentList().getHead();
-    while (sCur != nullptr) {
-        bookingStudentCombo->addItem(UiHelper::nameWithId(sCur->data->getFullName(), sCur->data->getId()),
-                                     UiHelper::toQString(sCur->data->getId()));
-        sCur = sCur->next;
+    for (Student* st : service.getStudents()) {
+        bookingStudentCombo->addItem(UiHelper::nameWithId(st->getFullName(), st->getId()),
+                                     UiHelper::toQString(st->getId()));
     }
     int si = bookingStudentCombo->findData(prevStudent);
     if (si >= 0) bookingStudentCombo->setCurrentIndex(si);
 
     tutorActorCombo->clear();
-    Node<Tutor*>* tCur = service.getTutorList().getHead();
-    while (tCur != nullptr) {
-        tutorActorCombo->addItem(UiHelper::nameWithId(tCur->data->getFullName(), tCur->data->getId()),
-                                 UiHelper::toQString(tCur->data->getId()));
-        tCur = tCur->next;
+    for (Tutor* tu : service.getTutors()) {
+        tutorActorCombo->addItem(UiHelper::nameWithId(tu->getFullName(), tu->getId()),
+                                 UiHelper::toQString(tu->getId()));
     }
     int ti = tutorActorCombo->findData(prevTutor);
     if (ti >= 0) tutorActorCombo->setCurrentIndex(ti);
@@ -921,12 +971,9 @@ void MainWindow::onSearchAvailableClasses() {
     QString subKey = searchSubjectInput->text().trimmed().toLower();
     availableClassesTable->setRowCount(0);
 
-    const DoublyLinkedList<Class*>& list = service.getClassList();
-    Node<Class*>* cur = list.getHead();
     int row = 0;
 
-    while (cur != nullptr) {
-        Class* c = cur->data;
+    for (Class* c : service.getClasses()) {
         if (c->getStatus() == "AVAILABLE") {
             QString cSub = UiHelper::toQString(c->getSubject()).toLower();
             if (subKey.isEmpty() || cSub.contains(subKey)) {
@@ -942,7 +989,6 @@ void MainWindow::onSearchAvailableClasses() {
                 row++;
             }
         }
-        cur = cur->next;
     }
     availableClassesTable->resizeRowsToContents();
 }
@@ -1070,6 +1116,181 @@ void MainWindow::onRejectRequest() {
     }
 }
 
+// xoa lop / rut dang ky
+
+QString MainWindow::selectedCell(QTableWidget* table, int col) {
+    int row = table->currentRow();
+    if (row < 0 || table->item(row, col) == nullptr) return "";
+    return table->item(row, col)->text();
+}
+
+bool MainWindow::confirm(const QString& title, const QString& text) {
+    return QMessageBox::question(this, title, text, QMessageBox::Yes | QMessageBox::No,
+                                 QMessageBox::No) == QMessageBox::Yes;
+}
+
+void MainWindow::updateClassActions() {
+    QString status = selectedCell(myClassesTable, 5);
+    btnDeleteClass->setEnabled(status == "AVAILABLE");
+    btnCancelBooking->setEnabled(status == "PENDING");
+}
+
+void MainWindow::onDeleteClass() {
+    QString classId = selectedCell(myClassesTable, 0);
+    if (classId.isEmpty()) return;
+    if (!confirm("Xoa lop", "Xoa lop trong " + classId + "?\nThao tac khong the hoan tac.")) return;
+
+    string error;
+    if (service.tutorDeleteClass(m_currentPersonId.toStdString(), classId.toStdString(), &error)) {
+        QMessageBox::information(this, "Thanh cong", "Da xoa lop " + classId + ".");
+        refreshAllTables();
+    } else {
+        QMessageBox::critical(this, "Loi", UiHelper::toQString(error));
+    }
+}
+
+void MainWindow::onCancelBooking() {
+    QString classId = selectedCell(myClassesTable, 0);
+    if (classId.isEmpty()) return;
+    if (!confirm("Rut dang ky", "Rut dang ky lop " + classId + "?")) return;
+
+    string error;
+    if (service.studentCancelBooking(m_currentPersonId.toStdString(), classId.toStdString(), &error)) {
+        QMessageBox::information(this, "Thanh cong", "Da rut dang ky lop " + classId + ".");
+        refreshAllTables();
+    } else {
+        QMessageBox::critical(this, "Loi", UiHelper::toQString(error));
+    }
+}
+
+// ket thuc hop dong
+
+void MainWindow::updateContractActions() {
+    QString status      = selectedCell(contractsTableWidget, 5);
+    QString requestedBy = selectedCell(contractsTableWidget, 6);
+    bool isParty = (m_currentRole == "Student" || m_currentRole == "Tutor");
+    bool mine    = (requestedBy == m_currentPersonId);
+
+    btnRequestEnd->setEnabled(isParty && status == "Active");
+    btnConfirmEnd->setEnabled(isParty && status == "EndRequested" && !mine);
+    btnCancelEnd->setEnabled(isParty && status == "EndRequested");
+    btnCancelEnd->setText(mine ? "Rut Yeu Cau" : "Tu Choi Ket Thuc");
+    btnAdminEnd->setEnabled(status == "Active" || status == "EndRequested");
+}
+
+void MainWindow::onRequestEndContract() {
+    QString contractId = selectedCell(contractsTableWidget, 0);
+    if (contractId.isEmpty()) return;
+    bool ok = false;
+    QString reason = QInputDialog::getText(this, "Yeu cau ket thuc " + contractId,
+                                           "Ly do ket thuc hop dong:", QLineEdit::Normal, "", &ok);
+    if (!ok) return;
+
+    string error;
+    if (service.requestEndContract(m_currentPersonId.toStdString(), contractId.toStdString(),
+                                   reason.toStdString(), &error)) {
+        QMessageBox::information(this, "Da gui yeu cau",
+            "Da gui yeu cau ket thuc " + contractId + ". Cho ben con lai xac nhan.");
+        refreshAllTables();
+    } else {
+        QMessageBox::critical(this, "Loi", UiHelper::toQString(error));
+    }
+}
+
+void MainWindow::onConfirmEndContract() {
+    QString contractId = selectedCell(contractsTableWidget, 0);
+    if (contractId.isEmpty()) return;
+    QString reason = selectedCell(contractsTableWidget, 7);
+    if (!confirm("Dong y ket thuc", "Ket thuc hop dong " + contractId + "?\nLy do: " + reason)) return;
+
+    string error;
+    if (service.confirmEndContract(m_currentPersonId.toStdString(), contractId.toStdString(), &error)) {
+        QMessageBox::information(this, "Thanh cong", "Hop dong " + contractId + " da ket thuc.");
+        refreshAllTables();
+    } else {
+        QMessageBox::critical(this, "Loi", UiHelper::toQString(error));
+    }
+}
+
+void MainWindow::onCancelEndRequest() {
+    QString contractId = selectedCell(contractsTableWidget, 0);
+    if (contractId.isEmpty()) return;
+
+    string error;
+    if (service.cancelEndRequest(m_currentPersonId.toStdString(), contractId.toStdString(), &error)) {
+        QMessageBox::information(this, "Thong bao", "Hop dong " + contractId + " tiep tuc hieu luc.");
+        refreshAllTables();
+    } else {
+        QMessageBox::critical(this, "Loi", UiHelper::toQString(error));
+    }
+}
+
+void MainWindow::onAdminEndContract() {
+    QString contractId = selectedCell(contractsTableWidget, 0);
+    if (contractId.isEmpty()) return;
+    bool ok = false;
+    QString reason = QInputDialog::getText(this, "Ket thuc ngay " + contractId,
+                                           "Ly do (co the de trong):", QLineEdit::Normal, "", &ok);
+    if (!ok || !confirm("Ket thuc ngay", "Ket thuc ngay hop dong " + contractId +
+                                         " ma khong can 2 ben xac nhan?")) return;
+
+    string error;
+    if (service.adminEndContract(contractId.toStdString(), reason.toStdString(), &error)) {
+        QMessageBox::information(this, "Thanh cong", "Hop dong " + contractId + " da ket thuc.");
+        refreshAllTables();
+    } else {
+        QMessageBox::critical(this, "Loi", UiHelper::toQString(error));
+    }
+}
+
+// admin xoa hoc vien / gia su
+
+void MainWindow::onDeleteStudent() { deletePerson(false); }
+void MainWindow::onDeleteTutor()   { deletePerson(true); }
+
+void MainWindow::deletePerson(bool isTutor) {
+    if (!m_auth) return;
+    QTableWidget* table = isTutor ? tutorTableWidget : studentTableWidget;
+    QString id = selectedCell(table, 0);
+    QString who = isTutor ? "gia su" : "hoc vien";
+    if (id.isEmpty()) {
+        QMessageBox::warning(this, "Canh bao", "Vui long chon " + who + " can xoa!");
+        return;
+    }
+
+    AdminService admin(*m_auth, service);
+    string pid = id.toStdString();
+    DeleteImpact impact = isTutor ? admin.previewDeleteTutor(pid) : admin.previewDeleteStudent(pid);
+    if (!impact.allowed) {
+        QMessageBox::warning(this, "Khong the xoa", UiHelper::toQString(impact.reason));
+        return;
+    }
+
+    // liet ke hau qua de admin xem truoc
+    auto join = [](const vector<string>& v) {
+        QStringList list;
+        for (const string& s : v) list << UiHelper::toQString(s);
+        return list.join(", ");
+    };
+    QString text = "Xoa " + who + " " + id + " (" + selectedCell(table, 1) + ")?\n";
+    if (!impact.deletedClasses.empty())  text += "\n- Xoa lop: " + join(impact.deletedClasses);
+    if (!impact.releasedClasses.empty()) text += "\n- Tra lai lop cho duyet: " + join(impact.releasedClasses);
+    if (!impact.deletedAccounts.empty()) text += "\n- Xoa tai khoan: " + join(impact.deletedAccounts);
+    if (impact.keptHistory > 0)          text += QString("\n- Giu lai %1 hop dong da ket thuc").arg(impact.keptHistory);
+    text += "\n\nThao tac khong the hoan tac.";
+    if (!confirm("Xoa " + who, text)) return;
+
+    string error;
+    bool ok = isTutor ? admin.deleteTutor(pid, &error) : admin.deleteStudent(pid, &error);
+    if (ok) {
+        QMessageBox::information(this, "Thanh cong", "Da xoa " + who + " " + id + ".");
+        refreshAllTables();
+    } else {
+        QMessageBox::critical(this, "Loi", UiHelper::toQString(error));
+        refreshAllTables();
+    }
+}
+
 // lam moi bang
 
 // yeu cau PENDING cua gia su dang thao tac
@@ -1078,10 +1299,8 @@ void MainWindow::refreshPendingRequests() {
     string tutorId = actingTutorId().toStdString();
     if (tutorId.empty()) return;
 
-    Node<Class*>* cur = service.getClassList().getHead();
     int row = 0;
-    while (cur != nullptr) {
-        Class* c = cur->data;
+    for (Class* c : service.getClasses()) {
         if (c->getTutorId() == tutorId && c->getStatus() == "PENDING") {
             Student* s = service.findStudentById(c->getStudentId());
             pendingRequestsTable->insertRow(row);
@@ -1094,7 +1313,6 @@ void MainWindow::refreshPendingRequests() {
             pendingRequestsTable->setItem(row, 6, UiHelper::tableCell("PENDING"));
             row++;
         }
-        cur = cur->next;
     }
     pendingRequestsTable->resizeRowsToContents();
 }
@@ -1117,10 +1335,8 @@ void MainWindow::refreshMyClasses() {
     }
 
     string me = m_currentPersonId.toStdString();
-    Node<Class*>* cur = service.getClassList().getHead();
     int row = 0;
-    while (cur != nullptr) {
-        Class* c = cur->data;
+    for (Class* c : service.getClasses()) {
         bool match = isAdmin ||
             (isStudent && c->getStudentId() == me && c->getStatus() != "AVAILABLE") ||
             (isTutor   && c->getTutorId()   == me);
@@ -1134,9 +1350,9 @@ void MainWindow::refreshMyClasses() {
 
             Tutor* t = service.findTutorById(c->getTutorId());
             Student* s = service.findStudentById(c->getStudentId());
-            QString tutorName   = t ? UiHelper::toQString(t->getFullName()) : UiHelper::toQString(c->getTutorId());
+            QString tutorName   = t ? UiHelper::toQString(t->getFullName()) : UiHelper::toQString(c->getTutorId()) + " (da xoa)";
             QString studentName = c->getStudentId().empty() ? QString("(chua co hoc vien)")
-                                : (s ? UiHelper::toQString(s->getFullName()) : UiHelper::toQString(c->getStudentId()));
+                                : (s ? UiHelper::toQString(s->getFullName()) : UiHelper::toQString(c->getStudentId()) + " (da xoa)");
 
             QString partner;
             if (isStudent)    partner = tutorName;
@@ -1148,9 +1364,9 @@ void MainWindow::refreshMyClasses() {
             myClassesTable->setItem(row, 6, UiHelper::tableCell(UiHelper::toQString(c->getContractId())));
             row++;
         }
-        cur = cur->next;
     }
     myClassesTable->resizeRowsToContents();
+    updateClassActions();
 }
 
 // chi hien hop dong cua minh, Admin xem tat ca
@@ -1165,10 +1381,8 @@ void MainWindow::refreshContracts() {
     if (!isAdmin && !isStudent && !isTutor) return;
 
     string me = m_currentPersonId.toStdString();
-    Node<Contract*>* cur = service.getContractList().getHead();
     int row = 0;
-    while (cur != nullptr) {
-        Contract* ct = cur->data;
+    for (Contract* ct : service.getContracts()) {
         bool match = isAdmin ||
             (isStudent && ct->getStudentId() == me) ||
             (isTutor   && ct->getTutorId()   == me);
@@ -1184,10 +1398,20 @@ void MainWindow::refreshContracts() {
             contractsTableWidget->setItem(row, 3, UiHelper::tableCell(UiHelper::toQString(ct->getSubjects())));
             contractsTableWidget->setItem(row, 4, UiHelper::tableCell(period));
             contractsTableWidget->setItem(row, 5, UiHelper::tableCell(UiHelper::toQString(ct->getStatus())));
+            contractsTableWidget->setItem(row, 6, UiHelper::tableCell(UiHelper::toQString(ct->getRequestedBy())));
+            QString reason = UiHelper::toQString(ct->getEndReason());
+            if (!ct->getEndedOn().empty()) reason += " (" + UiHelper::toQString(ct->getEndedOn()) + ")";
+            contractsTableWidget->setItem(row, 7, UiHelper::tableCell(reason));
+
+            // to mau dong cho xac nhan de ben kia de thay
+            if (ct->getStatus() == "EndRequested") {
+                for (int col = 0; col < contractsTableWidget->columnCount(); col++)
+                    contractsTableWidget->item(row, col)->setBackground(QColor("#fef3c7"));
+            }
             row++;
         }
-        cur = cur->next;
     }
+    updateContractActions();
 }
 
 void MainWindow::refreshAllTables() {
@@ -1195,10 +1419,8 @@ void MainWindow::refreshAllTables() {
 
     // bang hoc vien
     studentTableWidget->setRowCount(0);
-    Node<Student*>* sCur = service.getStudentList().getHead();
     int sRow = 0;
-    while (sCur != nullptr) {
-        Student* s = sCur->data;
+    for (Student* s : service.getStudents()) {
         studentTableWidget->insertRow(sRow);
         studentTableWidget->setItem(sRow, 0, UiHelper::tableCell(UiHelper::toQString(s->getId())));
         studentTableWidget->setItem(sRow, 1, UiHelper::tableCell(UiHelper::toQString(s->getFullName())));
@@ -1211,15 +1433,12 @@ void MainWindow::refreshAllTables() {
         studentTableWidget->setItem(sRow, 8, UiHelper::tableCell(UiHelper::toQString(s->getSubjects())));
         studentTableWidget->setItem(sRow, 9, UiHelper::tableCell(QString::number(s->getBudget(), 'f', 0)));
         sRow++;
-        sCur = sCur->next;
     }
 
     // bang gia su, hoc phi dat theo tung ca nen khong co cot
     tutorTableWidget->setRowCount(0);
-    Node<Tutor*>* tCur = service.getTutorList().getHead();
     int tRow = 0;
-    while (tCur != nullptr) {
-        Tutor* t = tCur->data;
+    for (Tutor* t : service.getTutors()) {
         tutorTableWidget->insertRow(tRow);
         tutorTableWidget->setItem(tRow, 0, UiHelper::tableCell(UiHelper::toQString(t->getId())));
         tutorTableWidget->setItem(tRow, 1, UiHelper::tableCell(UiHelper::toQString(t->getFullName())));
@@ -1233,7 +1452,6 @@ void MainWindow::refreshAllTables() {
         tutorTableWidget->setItem(tRow, 9, UiHelper::tableCell(QString::number(t->getExpYears()) + " nam"));
         tutorTableWidget->setItem(tRow, 10, UiHelper::tableCell(UiHelper::toQString(t->getAchievements()).replace('\n', ' ')));
         tRow++;
-        tCur = tCur->next;
     }
 
     // ca hoc, yeu cau, lop cua toi, hop dong
@@ -1251,6 +1469,13 @@ void MainWindow::applyRolePermissions() {
     bookingActorLabel->setVisible(!isAdmin);
     tutorActorCombo->setVisible(isAdmin);
     tutorActorLabel->setVisible(!isAdmin);
+    btnDeleteClass->setVisible(m_currentRole == "Tutor");
+    btnCancelBooking->setVisible(m_currentRole == "Student");
+    bool isParty = (m_currentRole == "Student" || m_currentRole == "Tutor");
+    btnRequestEnd->setVisible(isParty);
+    btnConfirmEnd->setVisible(isParty);
+    btnCancelEnd->setVisible(isParty);
+    btnAdminEnd->setVisible(isAdmin);
 
     refreshIdentity();
 

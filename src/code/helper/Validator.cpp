@@ -1,6 +1,7 @@
 #include "../../include/helper/Validator.h"
 #include "../../include/entities/Schedule.h"
 #include <cctype>
+#include <ctime>
 #include <sstream>
 
 // ham phu tro
@@ -144,6 +145,14 @@ int Validator::compareDates(const string& a, const string& b) {
     int ka = y1 * 10000 + m1 * 100 + d1;
     int kb = y2 * 10000 + m2 * 100 + d2;
     return ka < kb ? -1 : (ka > kb ? 1 : 0);
+}
+
+string Validator::today() {
+    time_t now = time(nullptr);
+    tm* t = localtime(&now);
+    char buf[11];
+    strftime(buf, sizeof(buf), "%d/%m/%Y", t);
+    return buf;
 }
 
 string Validator::getDateError(const string& date) {

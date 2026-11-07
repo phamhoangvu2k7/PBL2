@@ -5,9 +5,7 @@ int syncProfilesFromAccounts(AuthService& auth, CenterService& center, int* outF
 
     int created = 0;
     int failed = 0;
-    Node<Account*>* cur = auth.getAccountList().getHead();
-    while (cur != nullptr) {
-        Account* a = cur->data;
+    for (Account* a : auth.getAccounts()) {
         const string& role = a->getRole();
         if (role == "Student" || role == "Tutor") {
             const string& id = a->getPersonId();
@@ -21,7 +19,6 @@ int syncProfilesFromAccounts(AuthService& auth, CenterService& center, int* outF
                 else failed++;
             }
         }
-        cur = cur->next;
     }
     if (outFailed != nullptr) *outFailed = failed;
     return created;
