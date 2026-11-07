@@ -161,3 +161,34 @@ bool AuthService::isAdmin()   const { return currentUser && currentUser->getRole
 bool AuthService::usernameExists(const string& username) const {
     return accountRepo.findByUsername(username) != nullptr;
 }
+
+// xoa tai khoan
+
+vector<string> AuthService::accountsOfPerson(const string& personId) const {
+    vector<string> names;
+    for (Account* a : accountRepo.toVector()) {
+        if (!personId.empty() && a->getPersonId() == personId) names.push_back(a->getUsername());
+    }
+    return names;
+}
+
+bool AuthService::canRemoveAccountsOfPerson(const string& personId, string* outError) const {
+    if (personId.empty() || personId == "ADMIN") {
+        return fail(outError, "Khong the xoa tai khoan Admin!");
+    }
+    for (Account* a : accountRepo.toVector()) {
+        if (a->getPersonId() != personId) continue;
+        if (a->getRole() == "Admin") return fail(outError, "Khong the xoa tai khoan Admin!");
+        if (a == currentUser) return fail(outError, "Khong the xoa tai khoan dang dang nhap!");
+    }
+    return true;
+}
+
+bool AuthService::removeAccountsOfPerson(const string& personId, string* outError) {
+    // kiem tra het truoc, bi chan thi chua xoa gi
+    if (!canRemoveAccountsOfPerson(personId, outError)) return false;
+    for (Account* a : accountRepo.toVector()) {
+        if (a->getPersonId() == personId) accountRepo.remove(a->getAccountId());
+    }
+    return true;
+}

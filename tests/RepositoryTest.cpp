@@ -210,3 +210,103 @@ TEST(Repo_Account_SaveThenLoadKeepsProfile) {
         CHECK_EQ(a->getFullName(), string("Tran Thi Lan"));
     }
 }
+
+TEST(Repo_Remove_HeadMiddleTailAndMissing) {
+    StudentRepository repo;
+    repo.add(mkStudent("SV001"));
+    repo.add(mkStudent("SV002"));
+    repo.add(mkStudent("SV003"));
+    repo.add(mkStudent("SV004"));
+
+    CHECK_TRUE(repo.remove("SV002"));   // giua
+    CHECK_TRUE(repo.remove("SV001"));   // dau
+    CHECK_TRUE(repo.remove("SV004"));   // cuoi
+    CHECK_FALSE(repo.remove("SV004"));  // da xoa
+    CHECK_FALSE(repo.remove("SV999"));  // khong ton tai
+    CHECK_FALSE(repo.remove(""));
+
+    CHECK_EQ(repo.size(), 1);
+    CHECK_TRUE(repo.findById("SV002") == nullptr);
+    vector<Student*> v = repo.toVector();
+    CHECK_EQ(v.size(), (size_t)1);
+    CHECK_EQ(v[0]->getId(), string("SV003"));
+
+    CHECK_TRUE(repo.add(mkStudent("SV002")));   // ID da xoa them lai duoc
+    CHECK_EQ(repo.size(), 2);
+}
+
+TEST(Repo_Remove_PersistsToFile) {
+    TempFile f("remove");
+    {
+        StudentRepository repo(f.path);
+        repo.add(mkStudent("SV001"));
+        repo.add(mkStudent("SV002"));
+        CHECK_TRUE(repo.remove("SV001"));
+    }
+    StudentRepository again(f.path);
+    CHECK_TRUE(again.load());
+    CHECK_EQ(again.size(), 1);
+    CHECK_TRUE(again.findById("SV001") == nullptr);
+    CHECK_TRUE(again.findById("SV002") != nullptr);
+}
+
+TEST(Repo_Account_RemoveFreesUsername) {
+    AccountRepository repo;
+    repo.add(new Account("AC001", "lan", "123", "GS001", "Tutor"));
+    CHECK_TRUE(repo.remove("AC001"));
+    CHECK_TRUE(repo.findByUsername("lan") == nullptr);
+    CHECK_TRUE(repo.add(new Account("AC002", "lan", "456", "GS002", "Tutor")));   // dung lai username
+    CHECK_EQ(repo.findByUsername("lan")->getAccountId(), string("AC002"));
+}
+
+TEST(Repo_Contract_EndInfoRoundTripAndOldFormat) {
+    TempFile f("contract2");
+    {
+        ofstream out(f.path);
+        out << "HD001|GS001|SV001|||Toan|Active\n";   // file cu 7 cot
+    }
+    {
+        ContractRepository repo(f.path);
+        CHECK_TRUE(repo.load());
+        Contract* c = repo.findById("HD001");
+        CHECK_TRUE(c != nullptr);
+        if (c) {
+            CHECK_EQ(c->getRequestedBy(), string(""));
+            c->setStatus("Ended");
+            c->setRequestedBy("SV001");
+            c->setEndReason("Chuyen nha | xa");
+            c->setEndedOn("29/10/2026");
+            repo.update(c);
+        }
+    }
+    ContractRepository again(f.path);
+    again.load();
+    Contract* c = again.findById("HD001");
+    CHECK_TRUE(c != nullptr);
+    if (c) {
+        CHECK_EQ(c->getStatus(), string("Ended"));
+        CHECK_EQ(c->getRequestedBy(), string("SV001"));
+        CHECK_EQ(c->getEndReason(), string("Chuyen nha | xa"));
+        CHECK_EQ(c->getEndedOn(), string("29/10/2026"));
+    }
+}
+
+TEST(Repo_Load_DoesNotReuseIdsOfDeletedPeople) {
+    IdGenerator::reset();
+    TempFile fk("contract3"), fc("class3");
+    {
+        ofstream out(fk.path);
+        out << "HD001|GS002|SV005|||Toan|Ended|SV005|Chuyen nha|29/10/2026\n";
+    }
+    {
+        ofstream out(fc.path);
+        out << "CL001|HD001|SV004|GS007|Toan|T2 (18:00-20:00)|||ENDED|1000\n";
+    }
+    ContractRepository contracts(fk.path);
+    ClassRepository classes(fc.path);
+    contracts.load();
+    classes.load();
+    // SV005, GS007 khong con ho so nhung van nam trong lich su
+    CHECK_EQ(IdGenerator::generateStudentId(), string("SV006"));
+    CHECK_EQ(IdGenerator::generateTutorId(), string("GS008"));
+}

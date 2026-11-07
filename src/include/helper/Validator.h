@@ -25,6 +25,8 @@ public:
 
     // so sanh 2 ngay hop le dd/mm/yyyy: -1 (a truoc b), 0 (bang), 1 (a sau b)
     static int compareDates(const string& a, const string& b);
+    // ngay hien tai dd/mm/yyyy
+    static string today();
 
     // thong bao loi
     static string getScheduleError(const string& schedule);

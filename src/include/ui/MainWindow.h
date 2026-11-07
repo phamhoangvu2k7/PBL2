@@ -99,6 +99,13 @@ private:
     QGroupBox* contractsBox;
     QTableWidget* myClassesTable;
     QTableWidget* contractsTableWidget;
+    QPushButton* btnDeleteClass;    // gia su: xoa lop trong
+    QPushButton* btnCancelBooking;  // hoc vien: rut dang ky
+    // ket thuc hop dong
+    QPushButton* btnRequestEnd;     // 1 ben yeu cau
+    QPushButton* btnConfirmEnd;     // ben con lai dong y
+    QPushButton* btnCancelEnd;      // rut yeu cau / tu choi
+    QPushButton* btnAdminEnd;       // admin ket thuc ngay
 
     void setupUi();
     QWidget* createUsersTab();
@@ -121,6 +128,15 @@ private:
     void refreshPendingRequests();
     void refreshMyClasses();
     void refreshContracts();
+    // bat / tat nut theo trang thai dong dang chon
+    void updateClassActions();
+    void updateContractActions();
+    // o (row, col) cua dong dang chon, rong neu chua chon
+    static QString selectedCell(QTableWidget* table, int col);
+    // hoi xac nhan, mac dinh chon Khong
+    bool confirm(const QString& title, const QString& text);
+    // admin xoa hoc vien / gia su: xem truoc, xac nhan, xoa
+    void deletePerson(bool isTutor);
 
 public:
     // dang xuat, ve LoginWindow
@@ -136,6 +152,14 @@ private slots:
     void onOpenClass();
     void onApproveRequest();
     void onRejectRequest();
+    void onDeleteClass();
+    void onCancelBooking();
+    void onRequestEndContract();
+    void onConfirmEndContract();
+    void onCancelEndRequest();
+    void onAdminEndContract();
+    void onDeleteStudent();
+    void onDeleteTutor();
     void loadProfileForm();  // nap ho so vao form, dung cho nut Hoan Tac
     void onSaveProfile();
     void refreshAllTables();

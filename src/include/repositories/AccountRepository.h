@@ -15,6 +15,7 @@ protected:
     vector<string> toRecord(const Account& item) const override;
     Account* fromRecord(const vector<string>& r) const override;
     bool onAdd(Account* item) override;
+    void onRemove(Account* item) override;
 
 private:
     HashTable<string, Account*> usernameIndex;

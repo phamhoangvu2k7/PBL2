@@ -42,6 +42,12 @@ public:
 
     bool usernameExists(const string& username) const;
 
+    // xoa tai khoan theo ma SV / GS
+    vector<string> accountsOfPerson(const string& personId) const;  // username
+    // khong xoa Admin va nguoi dang dang nhap
+    bool canRemoveAccountsOfPerson(const string& personId, string* outError = nullptr) const;
+    bool removeAccountsOfPerson(const string& personId, string* outError = nullptr);
+
     // luu tai khoan ra file (goi sau khi sua thong tin tai khoan)
     bool saveToFile() const { return accountRepo.save(); }
 

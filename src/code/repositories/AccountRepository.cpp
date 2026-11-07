@@ -27,6 +27,10 @@ bool AccountRepository::onAdd(Account* a) {
     return true;
 }
 
+void AccountRepository::onRemove(Account* a) {
+    usernameIndex.remove(a->getUsername());
+}
+
 Account* AccountRepository::findByUsername(const string& username) const {
     Account* result = nullptr;
     usernameIndex.find(username, result);

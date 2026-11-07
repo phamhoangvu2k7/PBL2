@@ -496,9 +496,52 @@ bool CenterService::tutorRejectClass(const string& tutorId, const string& classI
     cls->setStudentId("");
     cls->setStatus("AVAILABLE");
 
-    cout << "[Thong Bao] Gia su da tu choi yeu cau. Ca hoc " << classId 
+    cout << "[Thong Bao] Gia su da tu choi yeu cau. Ca hoc " << classId
          << " da duoc mo lai (AVAILABLE) cho hoc vien khac!\n";
     classRepo.update(cls);
+    return true;
+}
+
+bool CenterService::tutorDeleteClass(const string& tutorId, const string& classId, string* outError) {
+    Class* cls = classRepo.findById(classId);
+    if (cls == nullptr) {
+        StringUtils::assign(outError, "Khong tim thay Lop hoc " + classId + "!");
+        return false;
+    }
+    if (cls->getTutorId() != tutorId) {
+        StringUtils::assign(outError, "Lop hoc " + classId + " khong thuoc ve Gia su " + tutorId + "!");
+        return false;
+    }
+    // chi xoa lop chua lien quan toi hoc vien nao
+    if (cls->getStatus() != "AVAILABLE") {
+        StringUtils::assign(outError, "Chi xoa duoc lop trong (AVAILABLE), lop " + classId +
+                                      " dang o trang thai " + cls->getStatus() + "!");
+        return false;
+    }
+    classRepo.remove(classId);
+    cout << "[Thanh Cong] Gia su " << tutorId << " da xoa lop " << classId << "\n";
+    return true;
+}
+
+bool CenterService::studentCancelBooking(const string& studentId, const string& classId, string* outError) {
+    Class* cls = classRepo.findById(classId);
+    if (cls == nullptr) {
+        StringUtils::assign(outError, "Khong tim thay Lop hoc " + classId + "!");
+        return false;
+    }
+    if (cls->getStudentId() != studentId) {
+        StringUtils::assign(outError, "Ban khong dang ky lop " + classId + "!");
+        return false;
+    }
+    if (cls->getStatus() != "PENDING") {
+        StringUtils::assign(outError, "Chi rut duoc lop dang cho duyet (PENDING)!");
+        return false;
+    }
+    // tra lop ve trong cho nguoi khac
+    cls->setStudentId("");
+    cls->setStatus("AVAILABLE");
+    classRepo.update(cls);
+    cout << "[Thong Bao] Hoc vien " << studentId << " da rut dang ky lop " << classId << "\n";
     return true;
 }
 
@@ -588,4 +631,187 @@ void CenterService::displayAllContracts() const {
         cur->data->display();
         cur = cur->next;
     }
+}
+
+// ket thuc hop dong
+
+Contract* CenterService::findOwnContract(const string& personId, const string& contractId,
+                                         const string& status, string* outError) const {
+    Contract* ct = contractRepo.findById(contractId);
+    if (ct == nullptr) {
+        StringUtils::assign(outError, "Khong tim thay Hop dong " + contractId + "!");
+        return nullptr;
+    }
+    if (personId.empty() || (ct->getTutorId() != personId && ct->getStudentId() != personId)) {
+        StringUtils::assign(outError, "Ban khong phai mot ben cua hop dong " + contractId + "!");
+        return nullptr;
+    }
+    if (ct->getStatus() != status) {
+        StringUtils::assign(outError, "Hop dong " + contractId + " dang o trang thai " +
+                                      ct->getStatus() + ", can " + status + "!");
+        return nullptr;
+    }
+    return ct;
+}
+
+void CenterService::finishContract(Contract* ct) {
+    ct->setStatus("Ended");
+    ct->setEndedOn(Validator::today());
+    contractRepo.update(ct);
+
+    // lop cua hop dong: luu lich su, giai phong lich
+    for (Class* c : classRepo.toVector()) {
+        if (c->getContractId() == ct->getContractId() && c->getStatus() == "ACTIVE") {
+            c->setStatus("ENDED");
+            classRepo.update(c);
+        }
+    }
+
+    Student* st = findStudentById(ct->getStudentId());
+    if (st != nullptr) {
+        st->setHasTutor(hasOpenContract(st->getId()));
+        studentRepo.update(st);
+    }
+    cout << "[Thong Bao] Hop dong " << ct->getContractId() << " da ket thuc\n";
+}
+
+bool CenterService::requestEndContract(const string& personId, const string& contractId,
+                                       const string& reason, string* outError) {
+    string why = StringUtils::trim(reason);
+    if (!Validator::isNotEmpty(why)) {
+        StringUtils::assign(outError, "Vui long nhap ly do ket thuc hop dong!");
+        return false;
+    }
+    Contract* ct = findOwnContract(personId, contractId, "Active", outError);
+    if (ct == nullptr) return false;
+
+    ct->setStatus("EndRequested");
+    ct->setRequestedBy(personId);
+    ct->setEndReason(why);
+    contractRepo.update(ct);
+    return true;
+}
+
+bool CenterService::confirmEndContract(const string& personId, const string& contractId, string* outError) {
+    Contract* ct = findOwnContract(personId, contractId, "EndRequested", outError);
+    if (ct == nullptr) return false;
+    // nguoi yeu cau khong tu dong y
+    if (ct->getRequestedBy() == personId) {
+        StringUtils::assign(outError, "Can ben con lai dong y ket thuc hop dong!");
+        return false;
+    }
+    finishContract(ct);
+    return true;
+}
+
+bool CenterService::cancelEndRequest(const string& personId, const string& contractId, string* outError) {
+    Contract* ct = findOwnContract(personId, contractId, "EndRequested", outError);
+    if (ct == nullptr) return false;
+    // nguoi yeu cau rut lai, hoac ben con lai tu choi
+    ct->setStatus("Active");
+    ct->setRequestedBy("");
+    ct->setEndReason("");
+    contractRepo.update(ct);
+    return true;
+}
+
+bool CenterService::adminEndContract(const string& contractId, const string& reason, string* outError) {
+    Contract* ct = contractRepo.findById(contractId);
+    if (ct == nullptr) {
+        StringUtils::assign(outError, "Khong tim thay Hop dong " + contractId + "!");
+        return false;
+    }
+    if (ct->getStatus() != "Active" && ct->getStatus() != "EndRequested") {
+        StringUtils::assign(outError, "Hop dong " + contractId + " da ket thuc!");
+        return false;
+    }
+    string why = StringUtils::trim(reason);
+    ct->setRequestedBy("ADMIN");
+    ct->setEndReason(why.empty() ? "Admin ket thuc" : why);
+    finishContract(ct);
+    return true;
+}
+
+bool CenterService::hasOpenContract(const string& personId) const {
+    for (Contract* ct : contractRepo.toVector()) {
+        bool party = ct->getTutorId() == personId || ct->getStudentId() == personId;
+        if (party && (ct->getStatus() == "Active" || ct->getStatus() == "EndRequested")) return true;
+    }
+    return false;
+}
+
+// xoa ho so
+
+namespace {
+
+// dem hop dong da ket thuc cua 1 nguoi
+int countEndedContracts(const vector<Contract*>& contracts, const string& personId) {
+    int n = 0;
+    for (Contract* ct : contracts) {
+        bool party = ct->getTutorId() == personId || ct->getStudentId() == personId;
+        if (party && ct->getStatus() == "Ended") n++;
+    }
+    return n;
+}
+
+}  // namespace
+
+DeleteImpact CenterService::previewRemoveStudent(const string& id) const {
+    DeleteImpact impact;
+    if (findStudentById(id) == nullptr) {
+        impact.reason = "Khong tim thay Hoc vien " + id + "!";
+        return impact;
+    }
+    if (hasOpenContract(id)) {
+        impact.reason = "Hoc vien " + id + " con hop dong dang hieu luc, can ket thuc hop dong truoc!";
+        return impact;
+    }
+    for (Class* c : classRepo.toVector()) {
+        if (c->getStudentId() == id && c->getStatus() == "PENDING") impact.releasedClasses.push_back(c->getClassId());
+    }
+    impact.keptHistory = countEndedContracts(contractRepo.toVector(), id);
+    impact.allowed = true;
+    return impact;
+}
+
+DeleteImpact CenterService::previewRemoveTutor(const string& id) const {
+    DeleteImpact impact;
+    if (findTutorById(id) == nullptr) {
+        impact.reason = "Khong tim thay Gia su " + id + "!";
+        return impact;
+    }
+    if (hasOpenContract(id)) {
+        impact.reason = "Gia su " + id + " con hop dong dang hieu luc, can ket thuc hop dong truoc!";
+        return impact;
+    }
+    for (Class* c : classRepo.toVector()) {
+        bool open = c->getStatus() == "AVAILABLE" || c->getStatus() == "PENDING";
+        if (c->getTutorId() == id && open) impact.deletedClasses.push_back(c->getClassId());
+    }
+    impact.keptHistory = countEndedContracts(contractRepo.toVector(), id);
+    impact.allowed = true;
+    return impact;
+}
+
+void CenterService::releaseStudentClasses(const string& id) {
+    for (const string& classId : previewRemoveStudent(id).releasedClasses) {
+        Class* c = classRepo.findById(classId);
+        c->setStudentId("");
+        c->setStatus("AVAILABLE");
+        classRepo.update(c);
+    }
+}
+
+void CenterService::removeTutorOpenClasses(const string& id) {
+    for (const string& classId : previewRemoveTutor(id).deletedClasses) classRepo.remove(classId);
+}
+
+bool CenterService::removeStudentProfile(const string& id) {
+    if (hasOpenContract(id)) return false;
+    return studentRepo.remove(id);
+}
+
+bool CenterService::removeTutorProfile(const string& id) {
+    if (hasOpenContract(id)) return false;
+    return tutorRepo.remove(id);
 }

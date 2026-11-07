@@ -31,6 +31,7 @@ protected:
     virtual T* fromRecord(const vector<string>& record) const = 0;  
 
     virtual bool onAdd(T*) { return true; }
+    virtual void onRemove(T*) {}  // lop con go bang bam phu
 
 public:
     explicit Repository(const string& file) : filePath(file) {}
@@ -49,6 +50,18 @@ public:
     //update
     bool update(T* item) {
         return item != nullptr && save();
+    }
+
+    //delete: go khoi ctdl, giai phong roi luu file
+    bool remove(const string& id) {
+        T* item = findById(id);
+        if (item == nullptr) return false;
+        onRemove(item);
+        items.remove(item);
+        index.remove(id);
+        delete item;
+        save();
+        return true;
     }
 
     T* findById(const string& id) const {
