@@ -31,6 +31,7 @@ set(CORE_SOURCES
     src/code/repositories/ContractRepository.cpp
     src/code/services/CenterService.cpp
     src/code/services/AuthService.cpp
+    src/code/services/AdminService.cpp
     src/code/services/ProfileSync.cpp
     src/code/services/DemoData.cpp
 )
@@ -68,6 +69,7 @@ set(HEADERS
     src/include/repositories/ContractRepository.h
     src/include/services/CenterService.h
     src/include/services/AuthService.h
+    src/include/services/AdminService.h
     src/include/services/ProfileSync.h
     src/include/services/DemoData.h
     src/include/ui/MainWindow.h
