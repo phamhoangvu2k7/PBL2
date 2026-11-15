@@ -12,25 +12,23 @@ private:
     static int nextContractId;
     static int nextAccountId;
 
-    // Phụ trợ: đệm số 0 bên trái, VD: padLeft(5, 3) -> "005"
-    static string padLeft(int number, int width);
+    // them so 0 ben trai, them_so_0(5, 3) = 005
+    static string them_so_0(int number, int width);
 
 public:
-    static string generateStudentId();    // "SV001", "SV002", ...
-    static string generateTutorId();      // "GS001", "GS002", ...
-    static string generateClassId();      // "CL001", "CL002", ...
-    static string generateContractId();   // "HD001", "HD002", ...
-    static string generateAccountId();    // "AC001", "AC002", ...
+    static string generateStudentId();
+    static string generateTutorId();
+    static string generateClassId();
+    static string generateContractId();
+    static string generateAccountId();
 
-    // Khi load dữ liệu từ file, cần cập nhật lại bộ đếm
-    // để đảm bảo mã mới không trùng với mã đã tồn tại
-    static void syncFromExistingId(const string& existingId);
+    // sau khi nap file, cap nhat bo dem
+    // de ma moi khong trung ma cu
+    static void dong_bo_ma(const string& existingId);
 
-    // Getters cho debug / display
-    static int getNextStudentNum() { return nextStudentId; }
-    static int getNextTutorNum() { return nextTutorId; }
-    static int getNextClassNum() { return nextClassId; }
-    static int getNextContractNum() { return nextContractId; }
+    // dat bo dem ve 1
+    static void reset();
+
 };
 
 #endif

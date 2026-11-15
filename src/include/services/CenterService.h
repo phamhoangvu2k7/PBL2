@@ -1,80 +1,134 @@
 #ifndef CENTER_SERVICE_H
 #define CENTER_SERVICE_H
 
-#include <iostream>
 #include <string>
-#include "../dsa/DoublyLinkedList.h"
-#include "../dsa/HashTable.h"
+#include <vector>
 #include "../entities/Student.h"
 #include "../entities/Tutor.h"
 #include "../entities/Class.h"
 #include "../entities/Contract.h"
+#include "../entities/Schedule.h"
 #include "../helper/Validator.h"
 #include "../helper/IdGenerator.h"
+#include "../repositories/StudentRepository.h"
+#include "../repositories/TutorRepository.h"
+#include "../repositories/ClassRepository.h"
+#include "../repositories/ContractRepository.h"
 
 using namespace std;
 
+struct StudentProfile {
+    string fullName, phone, email, address, gender, dateOfBirth;
+    string grade, subjects, schedule;
+    double budget = 0.0;
+};
+
+struct TutorProfile {
+    string fullName, phone, email, address, gender, dateOfBirth;
+    string subjects, qualification, achievements, schedule;
+    int expYears = 0;
+};
+
+// hau qua khi xoa 1 nguoi, de admin xem truoc
+struct DeleteImpact {
+    bool allowed = false;
+    string reason;                   // ly do bi chan
+    vector<string> deletedClasses;   // lop bi xoa
+    vector<string> releasedClasses;  // lop PENDING tra ve AVAILABLE
+    vector<string> deletedAccounts;  // username bi xoa
+    int keptHistory = 0;             // so hop dong Ended giu lai
+};
+
 class CenterService {
 private:
-    // Cấu trúc dữ liệu chính (Primary Storage)
-    DoublyLinkedList<Student*> studentList;
-    DoublyLinkedList<Tutor*> tutorList;
-    DoublyLinkedList<Class*> classList;
-    DoublyLinkedList<Contract*> contractList;
+    StudentRepository& studentRepo;
+    TutorRepository& tutorRepo;
+    ClassRepository& classRepo;
+    ContractRepository& contractRepo;
 
-    // Bảng băm tra cứu theo ID O(1) (Index Tables)
-    HashTable<string, Student*> studentTable;
-    HashTable<string, Tutor*> tutorTable;
-    HashTable<string, Class*> classTable;
-    HashTable<string, Contract*> contractTable;
-
-    // Hàm phụ trợ so sánh chuỗi không phân biệt hoa thường
-    bool containsIgnoreCase(const string& str, const string& sub) const;
+    Class* tim_trung_lich_gia_su(const string& tutorId, const Schedule& schedule) const;
+    Class* tim_trung_lich_hoc_vien(const string& studentId, const Schedule& schedule) const;
+    // tim hop dong ma personId la 1 ben, kiem tra trang thai
+    Contract* tim_hop_dong_cua(const string& personId, const string& contractId,
+                              const string& status, string* outError) const;
+    // chuyen hop dong sang Ended, lop sang ENDED, tinh lai hasTutor
+    void ket_thuc_hop_dong(Contract* contract);
 
 public:
-    CenterService();
-    ~CenterService();
+    //DI
+    CenterService(StudentRepository& students, TutorRepository& tutors,
+                  ClassRepository& classes, ContractRepository& contracts);
 
-    // 1. Quản lý Học viên & Gia sư
-    bool addStudent(Student* student);
-    bool addTutor(Tutor* tutor);
-    Student* findStudentById(const string& id) const;
-    Tutor* findTutorById(const string& id) const;
-    void displayAllStudents() const;
-    void displayAllTutors() const;
+    bool nap_du_lieu();
 
-    // 2. Gia sư mở khung giờ dạy (Tạo lớp ở trạng thái AVAILABLE)
-    // classId được tự động sinh bởi IdGenerator, schedule phải hợp lệ theo Validator
-    bool tutorOpenClass(const string& tutorId, const string& subject,
+    // 1. them hoc vien , gia su
+    bool them_hoc_vien(Student* student);
+    bool them_gia_su(Tutor* tutor);
+
+    // ktr tk đã đk chưa
+    bool dam_bao_ho_so_hv(const string& id, const string& fullName,
+                              const string& phone, const string& email,
+                              string* outError = nullptr);
+    bool dam_bao_ho_so_gs(const string& id, const string& fullName,
+                            const string& phone, const string& email,
+                            string* outError = nullptr);
+    // sua ho so 
+    bool sua_ho_so_hv(const string& id, const StudentProfile& p, string* outError = nullptr);
+    bool sua_ho_so_gs(const string& id, const TutorProfile& p, string* outError = nullptr);
+
+    Student* tim_hoc_vien(const string& id) const;
+    Tutor* tim_gia_su(const string& id) const;
+
+
+    // 2. gia su mo ca 
+    bool mo_lop(const string& tutorId, const string& subject,
                         const string& schedule, double tuitionFee,
                         const string& startDate = "", const string& endDate = "",
-                        string* outClassId = nullptr);
+                        string* outClassId = nullptr, string* outError = nullptr);
 
-    // 3. Học viên tìm kiếm khung giờ còn trống theo môn học
-    void displayAvailableClassesBySubject(const string& subject) const;
+    // 3. hoc vien dat ca
+    // tu choi neu trung lich lop PENDING/ACTIVE cua hoc vien
+    bool dang_ky_lop(const string& studentId, const string& classId,
+                          string* outError = nullptr);
 
-    // 4. Học viên đặt lịch (Khóa tạm thời khung giờ -> PENDING)
-    bool studentBookClass(const string& studentId, const string& classId);
+    // 4. gia su xem yeu cau, duyet / tu choi
+    bool duyet_lop(const string& tutorId, const string& classId);
+    bool tu_choi_lop(const string& tutorId, const string& classId);
 
-    // 5. Gia sư xem yêu cầu & Phê duyệt / Từ chối
-    void displayPendingRequestsByTutor(const string& tutorId) const;
-    bool tutorApproveClass(const string& tutorId, const string& classId);
-    bool tutorRejectClass(const string& tutorId, const string& classId);
+    // gia su xoa lop trong (AVAILABLE) cua minh
+    bool xoa_lop_trong(const string& tutorId, const string& classId, string* outError = nullptr);
+    // hoc vien rut dang ky lop dang cho duyet (PENDING)
+    bool rut_dang_ky(const string& studentId, const string& classId, string* outError = nullptr);
 
-    // 6. Xem lớp của mình (My Classes)
-    void displayClassesByStudent(const string& studentId) const;
-    void displayClassesByTutor(const string& tutorId) const;
+    // 5. tra cuu lop & hop dong
+    Contract* tim_hop_dong(const string& contractId) const;
+    Class* tim_lop(const string& classId) const;
 
-    // 7. Quản lý Hợp đồng & Toàn bộ lớp học
-    Contract* findContractById(const string& contractId) const;
-    Class* findClassById(const string& classId) const;
-    void displayAllClasses() const;
-    void displayAllContracts() const;
-    // 8. Getters truy xuất cấu trúc dữ liệu cho GUI
-    const DoublyLinkedList<Student*>& getStudentList() const { return studentList; }
-    const DoublyLinkedList<Tutor*>& getTutorList() const { return tutorList; }
-    const DoublyLinkedList<Class*>& getClassList() const { return classList; }
-    const DoublyLinkedList<Contract*>& getContractList() const { return contractList; }
+    // 6. ket thuc hop dong: Active -> EndRequested -> Ended
+    // 1 ben yeu cau (kem ly do), ben con lai dong y / tu choi, nguoi yeu cau co the rut
+    bool yeu_cau_ket_thuc(const string& personId, const string& contractId,
+                            const string& reason, string* outError = nullptr);
+    bool dong_y_ket_thuc(const string& personId, const string& contractId, string* outError = nullptr);
+    bool huy_yeu_cau_ket_thuc(const string& personId, const string& contractId, string* outError = nullptr);
+    // admin ket thuc ngay (xu ly tranh chap)
+    bool admin_ket_thuc(const string& contractId, const string& reason, string* outError = nullptr);
+    // con hop dong Active / EndRequested khong
+    bool con_hop_dong_mo(const string& personId) const;
+
+    // 7. xoa ho so (AdminService goi theo thu tu: lop -> tai khoan -> ho so)
+    // bi chan neu con hop dong Active / EndRequested; lop ENDED, hop dong Ended giu lai
+    DeleteImpact xem_truoc_xoa_hv(const string& id) const;
+    DeleteImpact xem_truoc_xoa_gs(const string& id) const;
+    void tra_lop_cua_hv(const string& id);   // lop PENDING -> AVAILABLE
+    void xoa_lop_mo_cua_gs(const string& id);  // xoa lop AVAILABLE / PENDING
+    bool xoa_ho_so_hv(const string& id);
+    bool xoa_ho_so_gs(const string& id);
+
+    // 8. getter cho GUI
+    vector<Student*> ds_hoc_vien() const { return studentRepo.toVector(); }
+    vector<Tutor*> ds_gia_su() const { return tutorRepo.toVector(); }
+    vector<Class*> ds_lop() const { return classRepo.toVector(); }
+    vector<Contract*> ds_hop_dong() const { return contractRepo.toVector(); }
 };
 
 #endif
