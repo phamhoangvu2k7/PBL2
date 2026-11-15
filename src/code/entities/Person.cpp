@@ -17,7 +17,6 @@ Person::Person(const string& id, const string& fullName, const string& phone,
 Person::~Person() {}
 
 string Person::getId() const { return id; }
-string Person::getUid() const { return id; }
 string Person::getFullName() const { return fullName; }
 string Person::getPhone() const { return phone; }
 string Person::getEmail() const { return email; }
