@@ -15,18 +15,14 @@ private:
 public:
     explicit AuthService(AccountRepository& accounts);
 
+    // cap ma SV / GS ngay khi tao, tra ma qua outPersonId
     bool registerAccount(const string& username, const string& password,
                          const string& role, const string& fullName = "",
                          const string& phone = "", const string& email = "",
-                         string* outError = nullptr);
+                         string* outError = nullptr, string* outPersonId = nullptr);
 
-    // cap ma SV/GS cho tai khoan chua co
-    int cap_ma_con_thieu();
-
-    // dang nhap
     bool login(const string& username, const string& password);
 
-    // dang xuat
     void logout();
 
     // trang thai dang nhap

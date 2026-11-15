@@ -424,18 +424,17 @@ void LoginWindow::onRegister() {
         return;
     }
 
-    // AuthService kiem tra du lieu, tra ly do neu sai
-    // ma SV/GS cap sau khi dang ky
-    std::string error;
+    // AuthService kiem tra du lieu, tra ly do neu sai, tra ma SV/GS vua cap
+    std::string error, personId;
     bool ok = m_auth.registerAccount(
         username.toStdString(), password.toStdString(), role.toStdString(),
-        fullName.toStdString(), phone.toStdString(), email.toStdString(), &error
+        fullName.toStdString(), phone.toStdString(), email.toStdString(), &error, &personId
     );
 
     if (ok) {
         // bao thanh cong, ve trang dang nhap
         regErrorLabel->setStyleSheet("color: #16a34a; background-color: #f0fdf4; border: 1px solid #bbf7d0;");
-        regErrorLabel->setText("Tao tai khoan thanh cong! Ma dinh danh se duoc cap khi ban dang nhap.");
+        regErrorLabel->setText("Tao tai khoan thanh cong! Ma cua ban: " + QString::fromStdString(personId));
 
         regUsernameInput->clear();
         regFullNameInput->clear();
@@ -448,8 +447,8 @@ void LoginWindow::onRegister() {
         loginPasswordInput->clear();
         loginPasswordInput->setFocus();
 
-        // sau 1 giay ve trang dang nhap
-        QTimer::singleShot(1000, this, &LoginWindow::onShowLoginPage);
+        // sau 2 giay ve trang dang nhap (du thoi gian doc ma)
+        QTimer::singleShot(2000, this, &LoginWindow::onShowLoginPage);
     } else {
         regErrorLabel->setText(QString::fromStdString(error));
     }

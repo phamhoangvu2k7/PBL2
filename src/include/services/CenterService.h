@@ -49,10 +49,10 @@ private:
 
     Class* tim_trung_lich_gia_su(const string& tutorId, const Schedule& schedule) const;
     Class* tim_trung_lich_hoc_vien(const string& studentId, const Schedule& schedule) const;
-    // tim hop dong ma personId la 1 ben, kiem tra trang thai
+
     Contract* tim_hop_dong_cua(const string& personId, const string& contractId,
                               const string& status, string* outError) const;
-    // chuyen hop dong sang Ended, lop sang ENDED, tinh lai hasTutor
+
     void ket_thuc_hop_dong(Contract* contract);
 
 public:
@@ -87,8 +87,7 @@ public:
                         const string& startDate = "", const string& endDate = "",
                         string* outClassId = nullptr, string* outError = nullptr);
 
-    // 3. hoc vien dat ca
-    // tu choi neu trung lich lop PENDING/ACTIVE cua hoc vien
+    // 3. hoc vien dat ca , tu choi neu trung lich lop PENDING/ACTIVE cua hoc vien
     bool dang_ky_lop(const string& studentId, const string& classId,
                           string* outError = nullptr);
 
@@ -106,7 +105,6 @@ public:
     Class* tim_lop(const string& classId) const;
 
     // 6. ket thuc hop dong: Active -> EndRequested -> Ended
-    // 1 ben yeu cau (kem ly do), ben con lai dong y / tu choi, nguoi yeu cau co the rut
     bool yeu_cau_ket_thuc(const string& personId, const string& contractId,
                             const string& reason, string* outError = nullptr);
     bool dong_y_ket_thuc(const string& personId, const string& contractId, string* outError = nullptr);

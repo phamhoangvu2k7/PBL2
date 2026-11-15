@@ -215,12 +215,18 @@ TEST(Auth_RegisterValidation) {
 
 TEST(Auth_AssignPersonIdsAndProfileSync) {
     AuthEnv e;
-    e.auth.registerAccount("hs", "matkhau1", "Student", "Nguyen Hoang Nam", "0911222333", "nam@gmail.com");
-    e.auth.registerAccount("gs", "matkhau2", "Tutor", "Tran Thi Lan", "0944555666", "lan@gmail.com");
-
+    // giong main_gui: nap du lieu truoc, roi moi dang ky
     StudentRepository s; TutorRepository t; ClassRepository c; ContractRepository k;
     CenterService svc(s, t, c, k);
     tao_du_lieu_mau(svc);   // SV001, SV002, GS001, GS002
+
+    string hsId, gsId;
+    e.auth.registerAccount("hs", "matkhau1", "Student", "Nguyen Hoang Nam", "0911222333", "nam@gmail.com", nullptr, &hsId);
+    e.auth.registerAccount("gs", "matkhau2", "Tutor", "Tran Thi Lan", "0944555666", "lan@gmail.com", nullptr, &gsId);
+    // ma cap ngay khi dang ky, khong trung du lieu mau
+    CHECK_EQ(hsId, string("SV003"));
+    CHECK_EQ(gsId, string("GS003"));
+    CHECK_TRUE(svc.tim_hoc_vien("SV003") == nullptr);   // ho so chua co, tao khi dang nhap
 
     int failed = -1;
     int created = dong_bo_ho_so(e.auth, svc, &failed);
@@ -245,7 +251,6 @@ TEST(Auth_PersistsAccountsAcrossRestart) {
         AccountRepository accounts(f);
         AuthService auth(accounts);
         auth.registerAccount("hs", "matkhau1", "Student", "Nguyen Hoang Nam", "0911222333", "nam@gmail.com");
-        auth.cap_ma_con_thieu();
     }
     IdGenerator::reset();
     AccountRepository accounts(f);

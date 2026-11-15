@@ -199,6 +199,10 @@ void MainWindow::applyStyles() {
         QPushButton#btnDanger:hover { background-color: #b91c1c; }
         QPushButton#btnSecondary { background-color: #64748b; }
         QPushButton#btnSecondary:hover { background-color: #475569; }
+        QPushButton:disabled, QPushButton#btnSuccess:disabled,
+        QPushButton#btnDanger:disabled, QPushButton#btnSecondary:disabled {
+            background-color: #cbd5e1; color: #f1f5f9;
+        }
         QTableWidget {
             background-color: #ffffff;
             border: 1px solid #e2e8f0;

@@ -6,16 +6,12 @@
 #include <iostream>
 using namespace std;
 
-namespace {
 
 bool bao_loi(string* outError, const string& msg) {
     cout << "[Loi] " << msg << "\n";
     StringUtils::gan(outError, msg);
     return false;
 }
-
-}  // namespace
-
 
 AuthService::AuthService(AccountRepository& accounts)
     : accountRepo(accounts), currentUser(nullptr) {
@@ -32,7 +28,7 @@ AuthService::AuthService(AccountRepository& accounts)
 bool AuthService::registerAccount(const string& username, const string& password,
                                   const string& role, const string& fullNameIn,
                                   const string& phoneIn, const string& emailIn,
-                                  string* outError) {
+                                  string* outError, string* outPersonId) {
     string fullName = StringUtils::trim(fullNameIn);
     string phone    = StringUtils::trim(phoneIn);
     string email    = StringUtils::trim(emailIn);
@@ -74,8 +70,9 @@ bool AuthService::registerAccount(const string& username, const string& password
         }
     }
 
-    // ma SV/GS se cap sau trong cap_ma_con_thieu()
-    string personId = (role == "Admin") ? "ADMIN" : "";
+    string personId = (role == "Admin")   ? "ADMIN"
+                    : (role == "Student") ? IdGenerator::generateStudentId()
+                                          : IdGenerator::generateTutorId();
 
     string accId    = IdGenerator::generateAccountId();
     string passHash = PasswordHasher::hash(password);
@@ -87,28 +84,8 @@ bool AuthService::registerAccount(const string& username, const string& password
         return bao_loi(outError, "Khong the tao tai khoan!");
     }
 
-    cout << "[Thanh Cong] Tai khoan '" << username << "' (Role: " << role << ") da duoc tao!\n";
+    StringUtils::gan(outPersonId, personId);
     return true;
-}
-
-int AuthService::cap_ma_con_thieu() {
-    int count = 0;
-    Node<Account*>* cur = accountRepo.getAll().getHead();
-    while (cur != nullptr) {
-        Account* a = cur->data;
-        if (a->getPersonId().empty()) {
-            if (a->getRole() == "Student") {
-                a->setPersonId(IdGenerator::generateStudentId());
-                count++;
-            } else if (a->getRole() == "Tutor") {
-                a->setPersonId(IdGenerator::generateTutorId());
-                count++;
-            }
-        }
-        cur = cur->next;
-    }
-    if (count > 0) accountRepo.save();
-    return count;
 }
 
 // dang nhap
@@ -116,17 +93,14 @@ int AuthService::cap_ma_con_thieu() {
 bool AuthService::login(const string& username, const string& password) {
     Account* acc = accountRepo.findByUsername(username);
     if (acc == nullptr) {
-        cout << "[Loi] Tai khoan '" << username << "' khong ton tai!\n";
         return false;
     }
 
     if (!PasswordHasher::verify(password, acc->getPasswordHash())) {
-        cout << "[Loi] Mat khau khong chinh xac!\n";
         return false;
     }
 
     currentUser = acc;
-    cout << "[OK] Dang nhap: " << username << " (Role: " << acc->getRole() << ")\n";
     return true;
 }
 
