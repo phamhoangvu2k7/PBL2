@@ -3,6 +3,6 @@
 
 #include "CenterService.h"
 
-void seedDemoData(CenterService& service);
+void tao_du_lieu_mau(CenterService& service);
 
 #endif

@@ -11,10 +11,10 @@ vector<string> ContractRepository::toRecord(const Contract& c) const {
 // file cu 7 cot (chua co thong tin ket thuc) van doc duoc
 Contract* ContractRepository::fromRecord(const vector<string>& r) const {
     if (r.size() < 7 || r[0].empty()) return nullptr;
-    IdGenerator::syncFromExistingId(r[0]);
+    IdGenerator::dong_bo_ma(r[0]);
     // ma nguoi trong lich su khong duoc cap lai du nguoi do da bi xoa
-    IdGenerator::syncFromExistingId(r[1]);
-    IdGenerator::syncFromExistingId(r[2]);
+    IdGenerator::dong_bo_ma(r[1]);
+    IdGenerator::dong_bo_ma(r[2]);
     Contract* c = new Contract(r[0], r[1], r[2], r[3], r[4], r[5], r[6]);
     if (r.size() >= 10) {
         c->setRequestedBy(r[7]);

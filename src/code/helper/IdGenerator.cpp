@@ -10,30 +10,30 @@ int IdGenerator::nextContractId = 1;
 int IdGenerator::nextAccountId  = 1;
 
 // them so 0 ben trai
-string IdGenerator::padLeft(int number, int width) {
+string IdGenerator::them_so_0(int number, int width) {
     ostringstream oss;
     oss << setfill('0') << setw(width) << number;
     return oss.str();
 }
 
 string IdGenerator::generateStudentId() {
-    return "SV" + padLeft(nextStudentId++, 3);
+    return "SV" + them_so_0(nextStudentId++, 3);
 }
 
 string IdGenerator::generateTutorId() {
-    return "GS" + padLeft(nextTutorId++, 3);
+    return "GS" + them_so_0(nextTutorId++, 3);
 }
 
 string IdGenerator::generateClassId() {
-    return "CL" + padLeft(nextClassId++, 3);
+    return "CL" + them_so_0(nextClassId++, 3);
 }
 
 string IdGenerator::generateContractId() {
-    return "HD" + padLeft(nextContractId++, 3);
+    return "HD" + them_so_0(nextContractId++, 3);
 }
 
 string IdGenerator::generateAccountId() {
-    return "AC" + padLeft(nextAccountId++, 3);
+    return "AC" + them_so_0(nextAccountId++, 3);
 }
 
 void IdGenerator::reset() {
@@ -45,20 +45,18 @@ void IdGenerator::reset() {
 }
 
 // dong bo bo dem sau khi nap file de khong trung ma
-// tien to: SV, GS, CL, HD, AC
-void IdGenerator::syncFromExistingId(const string& existingId) {
+void IdGenerator::dong_bo_ma(const string& existingId) {
     if (existingId.length() < 3) return;
 
     string prefix = existingId.substr(0, 2);
     string numStr = existingId.substr(2);
 
-    // phan so toi da 9 chu so de stoi khong tran
     if (numStr.length() > 9) return;
     for (char c : numStr) {
         if (c < '0' || c > '9') return;
     }
 
-    int num = stoi(numStr) + 1;  // bo dem moi phai lon hon ma da co
+    int num = stoi(numStr) + 1; // tang 1 ma
 
     if (prefix == "SV" && num > nextStudentId)  { nextStudentId  = num; }
     else if (prefix == "GS" && num > nextTutorId)    { nextTutorId    = num; }

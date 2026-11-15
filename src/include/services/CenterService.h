@@ -47,101 +47,89 @@ private:
     ClassRepository& classRepo;
     ContractRepository& contractRepo;
 
-    Class* findTutorConflict(const string& tutorId, const Schedule& schedule) const;
-    Class* findStudentConflict(const string& studentId, const Schedule& schedule) const;
+    Class* tim_trung_lich_gia_su(const string& tutorId, const Schedule& schedule) const;
+    Class* tim_trung_lich_hoc_vien(const string& studentId, const Schedule& schedule) const;
     // tim hop dong ma personId la 1 ben, kiem tra trang thai
-    Contract* findOwnContract(const string& personId, const string& contractId,
+    Contract* tim_hop_dong_cua(const string& personId, const string& contractId,
                               const string& status, string* outError) const;
     // chuyen hop dong sang Ended, lop sang ENDED, tinh lai hasTutor
-    void finishContract(Contract* contract);
+    void ket_thuc_hop_dong(Contract* contract);
 
 public:
     //DI
     CenterService(StudentRepository& students, TutorRepository& tutors,
                   ClassRepository& classes, ContractRepository& contracts);
 
-    bool loadData();
+    bool nap_du_lieu();
 
     // 1. them hoc vien , gia su
-    bool addStudent(Student* student);
-    bool addTutor(Tutor* tutor);
+    bool them_hoc_vien(Student* student);
+    bool them_gia_su(Tutor* tutor);
 
     // ktr tk đã đk chưa
-    bool ensureStudentProfile(const string& id, const string& fullName,
+    bool dam_bao_ho_so_hv(const string& id, const string& fullName,
                               const string& phone, const string& email,
                               string* outError = nullptr);
-    bool ensureTutorProfile(const string& id, const string& fullName,
+    bool dam_bao_ho_so_gs(const string& id, const string& fullName,
                             const string& phone, const string& email,
                             string* outError = nullptr);
     // sua ho so 
-    bool updateStudentProfile(const string& id, const StudentProfile& p, string* outError = nullptr);
-    bool updateTutorProfile(const string& id, const TutorProfile& p, string* outError = nullptr);
+    bool sua_ho_so_hv(const string& id, const StudentProfile& p, string* outError = nullptr);
+    bool sua_ho_so_gs(const string& id, const TutorProfile& p, string* outError = nullptr);
 
-    Student* findStudentById(const string& id) const;
-    Tutor* findTutorById(const string& id) const;
+    Student* tim_hoc_vien(const string& id) const;
+    Tutor* tim_gia_su(const string& id) const;
 
-    void displayAllStudents() const;
-    void displayAllTutors() const;
 
     // 2. gia su mo ca 
-    bool tutorOpenClass(const string& tutorId, const string& subject,
+    bool mo_lop(const string& tutorId, const string& subject,
                         const string& schedule, double tuitionFee,
                         const string& startDate = "", const string& endDate = "",
                         string* outClassId = nullptr, string* outError = nullptr);
 
-    // 3. hoc vien tim ca con trong theo mon
-    void displayAvailableClassesBySubject(const string& subject) const;
-
-    // 4. hoc vien dat ca 
+    // 3. hoc vien dat ca
     // tu choi neu trung lich lop PENDING/ACTIVE cua hoc vien
-    bool studentBookClass(const string& studentId, const string& classId,
+    bool dang_ky_lop(const string& studentId, const string& classId,
                           string* outError = nullptr);
 
-    // 5. gia su xem yeu cau, duyet / tu choi
-    void displayPendingRequestsByTutor(const string& tutorId) const;
-    bool tutorApproveClass(const string& tutorId, const string& classId);
-    bool tutorRejectClass(const string& tutorId, const string& classId);
+    // 4. gia su xem yeu cau, duyet / tu choi
+    bool duyet_lop(const string& tutorId, const string& classId);
+    bool tu_choi_lop(const string& tutorId, const string& classId);
 
     // gia su xoa lop trong (AVAILABLE) cua minh
-    bool tutorDeleteClass(const string& tutorId, const string& classId, string* outError = nullptr);
+    bool xoa_lop_trong(const string& tutorId, const string& classId, string* outError = nullptr);
     // hoc vien rut dang ky lop dang cho duyet (PENDING)
-    bool studentCancelBooking(const string& studentId, const string& classId, string* outError = nullptr);
+    bool rut_dang_ky(const string& studentId, const string& classId, string* outError = nullptr);
 
-    // 6. lop cua toi
-    void displayClassesByStudent(const string& studentId) const;
-    void displayClassesByTutor(const string& tutorId) const;
+    // 5. tra cuu lop & hop dong
+    Contract* tim_hop_dong(const string& contractId) const;
+    Class* tim_lop(const string& classId) const;
 
-    // 7. hop dong & tat ca lop
-    Contract* findContractById(const string& contractId) const;
-    Class* findClassById(const string& classId) const;
-    void displayAllClasses() const;
-    void displayAllContracts() const;
-
-    // 8. ket thuc hop dong: Active -> EndRequested -> Ended
+    // 6. ket thuc hop dong: Active -> EndRequested -> Ended
     // 1 ben yeu cau (kem ly do), ben con lai dong y / tu choi, nguoi yeu cau co the rut
-    bool requestEndContract(const string& personId, const string& contractId,
+    bool yeu_cau_ket_thuc(const string& personId, const string& contractId,
                             const string& reason, string* outError = nullptr);
-    bool confirmEndContract(const string& personId, const string& contractId, string* outError = nullptr);
-    bool cancelEndRequest(const string& personId, const string& contractId, string* outError = nullptr);
+    bool dong_y_ket_thuc(const string& personId, const string& contractId, string* outError = nullptr);
+    bool huy_yeu_cau_ket_thuc(const string& personId, const string& contractId, string* outError = nullptr);
     // admin ket thuc ngay (xu ly tranh chap)
-    bool adminEndContract(const string& contractId, const string& reason, string* outError = nullptr);
+    bool admin_ket_thuc(const string& contractId, const string& reason, string* outError = nullptr);
     // con hop dong Active / EndRequested khong
-    bool hasOpenContract(const string& personId) const;
+    bool con_hop_dong_mo(const string& personId) const;
 
-    // 9. xoa ho so (AdminService goi theo thu tu: lop -> tai khoan -> ho so)
+    // 7. xoa ho so (AdminService goi theo thu tu: lop -> tai khoan -> ho so)
     // bi chan neu con hop dong Active / EndRequested; lop ENDED, hop dong Ended giu lai
-    DeleteImpact previewRemoveStudent(const string& id) const;
-    DeleteImpact previewRemoveTutor(const string& id) const;
-    void releaseStudentClasses(const string& id);   // lop PENDING -> AVAILABLE
-    void removeTutorOpenClasses(const string& id);  // xoa lop AVAILABLE / PENDING
-    bool removeStudentProfile(const string& id);
-    bool removeTutorProfile(const string& id);
+    DeleteImpact xem_truoc_xoa_hv(const string& id) const;
+    DeleteImpact xem_truoc_xoa_gs(const string& id) const;
+    void tra_lop_cua_hv(const string& id);   // lop PENDING -> AVAILABLE
+    void xoa_lop_mo_cua_gs(const string& id);  // xoa lop AVAILABLE / PENDING
+    bool xoa_ho_so_hv(const string& id);
+    bool xoa_ho_so_gs(const string& id);
 
     // 8. getter cho GUI
-    vector<Student*> getStudents() const { return studentRepo.toVector(); }
-    vector<Tutor*> getTutors() const { return tutorRepo.toVector(); }
-    vector<Class*> getClasses() const { return classRepo.toVector(); }
-    vector<Contract*> getContracts() const { return contractRepo.toVector(); }
+    vector<Student*> ds_hoc_vien() const { return studentRepo.toVector(); }
+    vector<Tutor*> ds_gia_su() const { return tutorRepo.toVector(); }
+    vector<Class*> ds_lop() const { return classRepo.toVector(); }
+    vector<Contract*> ds_hop_dong() const { return contractRepo.toVector(); }
 };
 
 #endif

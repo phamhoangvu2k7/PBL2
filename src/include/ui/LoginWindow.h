@@ -17,13 +17,9 @@ public:
     explicit LoginWindow(AuthService& auth, QWidget* parent = nullptr);
     ~LoginWindow();
 
-    bool loginSuccessful() const { return m_loginSuccess; }
-    bool isGuestMode()     const { return m_guestMode; }
 
 private:
     AuthService& m_auth;
-    bool m_loginSuccess;
-    bool m_guestMode;
 
     QStackedWidget* stackedWidget;
 

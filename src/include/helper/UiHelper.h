@@ -9,15 +9,15 @@ class UiHelper {
 public:
     UiHelper() = delete;
 
-    static QString toQString(const std::string& s);
+    static QString sang_qstring(const std::string& s);
 
-    static QString scheduleText(const std::string& raw);
+    static QString chu_lich(const std::string& raw);
 
-    static QString nameWithId(const std::string& name, const std::string& id);
+    static QString ten_kem_ma(const std::string& name, const std::string& id);
 
-    static QTableWidgetItem* tableCell(const QString& text);
+    static QTableWidgetItem* o_bang(const QString& text);
 
-    static QTableWidgetItem* tutorLinkCell(const QString& text, const std::string& tutorId);
+    static QTableWidgetItem* o_link_gia_su(const QString& text, const std::string& tutorId);
 };
 
 #endif

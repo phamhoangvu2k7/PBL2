@@ -8,15 +8,15 @@ using namespace std;
 class RecordFile {
 public:
 
-    static string escape(const string& field);
-    static string unescape(const string& field);
+    static string ma_hoa(const string& field);
+    static string giai_ma(const string& field);
 
-    static string join(const vector<string>& fields);
-    static vector<string> split(const string& line);
+    static string noi_cot(const vector<string>& fields);
+    static vector<string> tach_cot(const string& line);
 
-    static bool read(const string& path, vector<vector<string>>& records);
+    static bool doc_file(const string& path, vector<vector<string>>& records);
 
-    static bool write(const string& path, const vector<string>& lines);
+    static bool ghi_file(const string& path, const vector<string>& lines);
 };
 
 #endif

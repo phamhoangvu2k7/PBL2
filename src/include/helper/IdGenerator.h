@@ -12,8 +12,8 @@ private:
     static int nextContractId;
     static int nextAccountId;
 
-    // them so 0 ben trai, padLeft(5, 3) = 005
-    static string padLeft(int number, int width);
+    // them so 0 ben trai, them_so_0(5, 3) = 005
+    static string them_so_0(int number, int width);
 
 public:
     static string generateStudentId();
@@ -24,16 +24,11 @@ public:
 
     // sau khi nap file, cap nhat bo dem
     // de ma moi khong trung ma cu
-    static void syncFromExistingId(const string& existingId);
+    static void dong_bo_ma(const string& existingId);
 
     // dat bo dem ve 1
     static void reset();
 
-    // getter
-    static int getNextStudentNum() { return nextStudentId; }
-    static int getNextTutorNum() { return nextTutorId; }
-    static int getNextClassNum() { return nextClassId; }
-    static int getNextContractNum() { return nextContractId; }
 };
 
 #endif

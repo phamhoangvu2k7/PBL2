@@ -86,7 +86,7 @@ public:
     //doc file luu vao ctdl
     bool load() {
         vector<vector<string>> records;
-        if (filePath.empty() || !RecordFile::read(filePath, records)) return false;
+        if (filePath.empty() || !RecordFile::doc_file(filePath, records)) return false;
 
         for (const vector<string>& r : records) {
             T* item = fromRecord(r);
@@ -100,8 +100,8 @@ public:
         if (filePath.empty()) return false;
         vector<string> lines;
         for (Node<T*>* cur = items.getHead(); cur != nullptr; cur = cur->next)
-            lines.push_back(RecordFile::join(toRecord(*cur->data)));
-        return RecordFile::write(filePath, lines);
+            lines.push_back(RecordFile::noi_cot(toRecord(*cur->data)));
+        return RecordFile::ghi_file(filePath, lines);
     }
 };
 

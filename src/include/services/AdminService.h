@@ -13,16 +13,16 @@ private:
     AuthService& auth;
     CenterService& center;
 
-    DeleteImpact preview(const string& id, bool isTutor) const;
-    bool deletePerson(const string& id, bool isTutor, string* outError);
+    DeleteImpact xem_truoc(const string& id, bool isTutor) const;
+    bool xoa_nguoi(const string& id, bool isTutor, string* outError);
 
 public:
     AdminService(AuthService& auth, CenterService& center);
 
-    DeleteImpact previewDeleteStudent(const string& id) const { return preview(id, false); }
-    DeleteImpact previewDeleteTutor(const string& id) const { return preview(id, true); }
-    bool deleteStudent(const string& id, string* outError = nullptr) { return deletePerson(id, false, outError); }
-    bool deleteTutor(const string& id, string* outError = nullptr) { return deletePerson(id, true, outError); }
+    DeleteImpact xem_truoc_xoa_hoc_vien(const string& id) const { return xem_truoc(id, false); }
+    DeleteImpact xem_truoc_xoa_gia_su(const string& id) const { return xem_truoc(id, true); }
+    bool xoa_hoc_vien(const string& id, string* outError = nullptr) { return xoa_nguoi(id, false, outError); }
+    bool xoa_gia_su(const string& id, string* outError = nullptr) { return xoa_nguoi(id, true, outError); }
 };
 
 #endif

@@ -15,7 +15,7 @@ const int LAST_MINUTE   = 23 * 60 + 45;
 
 void fillTimeCombo(QComboBox* combo, int selectedMinutes) {
     for (int m = 0; m <= LAST_MINUTE; m += Schedule::STEP_MINUTES) {
-        combo->addItem(QString::fromStdString(Schedule::formatTime(m)), m);
+        combo->addItem(QString::fromStdString(Schedule::gio_thanh_chuoi(m)), m);
     }
     combo->setCurrentIndex(selectedMinutes / Schedule::STEP_MINUTES);
     combo->setMaxVisibleItems(12);
@@ -116,7 +116,7 @@ SchedulePicker::SlotRow* SchedulePicker::createRow() {
     QHBoxLayout* days = new QHBoxLayout();
     days->setSpacing(6);
     for (int d = 0; d < Schedule::DAY_COUNT; d++) {
-        QPushButton* b = new QPushButton(QString::fromStdString(Schedule::dayCode(d)));
+        QPushButton* b = new QPushButton(QString::fromStdString(Schedule::ma_thu(d)));
         b->setObjectName("dayBtn");
         b->setCheckable(true);
         b->setCursor(Qt::PointingHandCursor);
@@ -193,7 +193,7 @@ void SchedulePicker::reset() {
 }
 
 bool SchedulePicker::getSchedule(Schedule& out, QString* error) const {
-    out.clear();
+    out.xoa_het();
     for (int i = 0; i < rows.size(); i++) {
         const SlotRow* row = rows[i];
         unsigned mask = 0;
@@ -204,11 +204,11 @@ bool SchedulePicker::getSchedule(Schedule& out, QString* error) const {
         int endMin = row->endCombo->currentData().toInt();
 
         std::string err;
-        if (!out.addSlot(mask, startMin, endMin, &err)) {
+        if (!out.them_khung(mask, startMin, endMin, &err)) {
             if (error != nullptr) {
                 *error = QString("Khung gio %1: %2").arg(i + 1).arg(QString::fromStdString(err));
             }
-            out.clear();
+            out.xoa_het();
             return false;
         }
     }
@@ -222,7 +222,7 @@ void SchedulePicker::updatePreview() {
 
     previewLabel->setProperty("invalid", !ok);
     if (ok) {
-        previewLabel->setText("Lich hoc: " + QString::fromStdString(s.toDisplayString()));
+        previewLabel->setText("Lich hoc: " + QString::fromStdString(s.chuoi_hien_thi()));
     } else {
         previewLabel->setText(err);
     }

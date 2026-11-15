@@ -8,7 +8,7 @@
 #include <QFrame>
 
 LoginWindow::LoginWindow(AuthService& auth, QWidget* parent)
-    : QDialog(parent), m_auth(auth), m_loginSuccess(false), m_guestMode(false)
+    : QDialog(parent), m_auth(auth)
 {
     setWindowTitle("Dang Nhap - He Thong Quan Ly Gia Su PBL2");
     setFixedSize(480, 500);
@@ -383,8 +383,6 @@ void LoginWindow::onLogin() {
     }
 
     if (m_auth.login(username.toStdString(), password.toStdString())) {
-        m_loginSuccess = true;
-        m_guestMode = false;
         accept();
     } else {
         loginErrorLabel->setText("Ten dang nhap hoac mat khau khong chinh xac!");
@@ -413,7 +411,7 @@ void LoginWindow::onRegister() {
         regErrorLabel->setText("Ten dang nhap khong duoc chua khoang trang!");
         return;
     }
-    if (m_auth.usernameExists(username.toStdString())) {
+    if (m_auth.username_ton_tai(username.toStdString())) {
         regErrorLabel->setText("Ten dang nhap '" + username + "' da ton tai! Vui long chon ten khac.");
         regUsernameInput->setFocus();
         regUsernameInput->selectAll();
@@ -458,8 +456,6 @@ void LoginWindow::onRegister() {
 }
 
 void LoginWindow::onGuestMode() {
-    m_loginSuccess = false;
-    m_guestMode = true;
     accept();
 }
 

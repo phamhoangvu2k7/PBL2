@@ -7,7 +7,7 @@ CenterService::CenterService(StudentRepository& students, TutorRepository& tutor
                              ClassRepository& classes, ContractRepository& contracts)
     : studentRepo(students), tutorRepo(tutors), classRepo(classes), contractRepo(contracts) {}
 
-bool CenterService::loadData() {
+bool CenterService::nap_du_lieu() {
     bool found = false;
     found = studentRepo.load() || found;
     found = tutorRepo.load() || found;
@@ -19,20 +19,20 @@ bool CenterService::loadData() {
 namespace {
 
 // lop con chiem lich
-bool occupiesSchedule(const Class* c) {
+bool chiem_lich(const Class* c) {
     const string& st = c->getStatus();
     return st == "AVAILABLE" || st == "PENDING" || st == "ACTIVE";
 }
 
 }  // namespace
 
-Class* CenterService::findTutorConflict(const string& tutorId, const Schedule& schedule) const {
+Class* CenterService::tim_trung_lich_gia_su(const string& tutorId, const Schedule& schedule) const {
     Node<Class*>* cur = classRepo.getAll().getHead();
     while (cur != nullptr) {
         Class* c = cur->data;
-        if (c->getTutorId() == tutorId && occupiesSchedule(c)) {
+        if (c->getTutorId() == tutorId && chiem_lich(c)) {
             Schedule other;
-            if (Schedule::parse(c->getSchedule(), other, nullptr) && schedule.overlaps(other)) {
+            if (Schedule::doc_lich(c->getSchedule(), other, nullptr) && schedule.trung_lich(other)) {
                 return c;
             }
         }
@@ -41,7 +41,7 @@ Class* CenterService::findTutorConflict(const string& tutorId, const Schedule& s
     return nullptr;
 }
 
-Class* CenterService::findStudentConflict(const string& studentId, const Schedule& schedule) const {
+Class* CenterService::tim_trung_lich_hoc_vien(const string& studentId, const Schedule& schedule) const {
     Node<Class*>* cur = classRepo.getAll().getHead();
     while (cur != nullptr) {
         Class* c = cur->data;
@@ -49,7 +49,7 @@ Class* CenterService::findStudentConflict(const string& studentId, const Schedul
         if (c->getStudentId() == studentId &&
             (c->getStatus() == "PENDING" || c->getStatus() == "ACTIVE")) {
             Schedule other;
-            if (Schedule::parse(c->getSchedule(), other, nullptr) && schedule.overlaps(other)) {
+            if (Schedule::doc_lich(c->getSchedule(), other, nullptr) && schedule.trung_lich(other)) {
                 return c;
             }
         }
@@ -60,56 +60,56 @@ Class* CenterService::findStudentConflict(const string& studentId, const Schedul
 
 // hoc vien & gia su
 
-bool CenterService::ensureStudentProfile(const string& id, const string& fullName,
+bool CenterService::dam_bao_ho_so_hv(const string& id, const string& fullName,
                                          const string& phone, const string& email,
                                          string* outError) {
     if (id.empty()) {
-        StringUtils::assign(outError, "Ma hoc vien rong!");
+        StringUtils::gan(outError, "Ma hoc vien rong!");
         return false;
     }
     if (studentRepo.findById(id) != nullptr) return true;
 
     Student* st = new Student(id, fullName, "", phone, email, "", "Nam", "", "", "", 0.0);
-    if (!addStudent(st)) {
+    if (!them_hoc_vien(st)) {
         delete st;
-        StringUtils::assign(outError, "Thong tin tai khoan " + id + " khong hop le (ten/SDT/email)!");
+        StringUtils::gan(outError, "Thong tin tai khoan " + id + " khong hop le (ten/SDT/email)!");
         return false;
     }
     return true;
 }
 
-bool CenterService::ensureTutorProfile(const string& id, const string& fullName,
+bool CenterService::dam_bao_ho_so_gs(const string& id, const string& fullName,
                                        const string& phone, const string& email,
                                        string* outError) {
     if (id.empty()) {
-        StringUtils::assign(outError, "Ma gia su rong!");
+        StringUtils::gan(outError, "Ma gia su rong!");
         return false;
     }
     if (tutorRepo.findById(id) != nullptr) return true;
 
     Tutor* tu = new Tutor(id, fullName, phone, email, "", "Nam", "", "", "", 0, 0.0, "");
-    if (!addTutor(tu)) {
+    if (!them_gia_su(tu)) {
         delete tu;
-        StringUtils::assign(outError, "Thong tin tai khoan " + id + " khong hop le (ten/SDT/email)!");
+        StringUtils::gan(outError, "Thong tin tai khoan " + id + " khong hop le (ten/SDT/email)!");
         return false;
     }
     return true;
 }
 
-bool CenterService::addStudent(Student* student) {
+bool CenterService::them_hoc_vien(Student* student) {
     if (student == nullptr) return false;
 
     // kiem tra du lieu
-    if (!Validator::isNotEmpty(student->getFullName())) {
+    if (!Validator::khong_rong(student->getFullName())) {
         cout << "[Loi] Ten hoc vien khong duoc de trong!\n";
         return false;
     }
-    if (!Validator::isValidPhone(student->getPhone())) {
-        cout << "[Loi] " << Validator::getPhoneError(student->getPhone()) << "\n";
+    if (!Validator::sdt_hop_le(student->getPhone())) {
+        cout << "[Loi] " << Validator::loi_sdt(student->getPhone()) << "\n";
         return false;
     }
-    if (!Validator::isValidEmail(student->getEmail())) {
-        cout << "[Loi] " << Validator::getEmailError(student->getEmail()) << "\n";
+    if (!Validator::email_hop_le(student->getEmail())) {
+        cout << "[Loi] " << Validator::loi_email(student->getEmail()) << "\n";
         return false;
     }
 
@@ -118,7 +118,7 @@ bool CenterService::addStudent(Student* student) {
         student->setId(IdGenerator::generateStudentId());
     } else {
         // dong bo bo dem de khong trung ID
-        IdGenerator::syncFromExistingId(student->getId());
+        IdGenerator::dong_bo_ma(student->getId());
     }
 
     if (studentRepo.findById(student->getId()) != nullptr) {
@@ -128,23 +128,23 @@ bool CenterService::addStudent(Student* student) {
     return studentRepo.add(student);
 }
 
-bool CenterService::addTutor(Tutor* tutor) {
+bool CenterService::them_gia_su(Tutor* tutor) {
     if (tutor == nullptr) return false;
 
     // kiem tra du lieu
-    if (!Validator::isNotEmpty(tutor->getFullName())) {
+    if (!Validator::khong_rong(tutor->getFullName())) {
         cout << "[Loi] Ten gia su khong duoc de trong!\n";
         return false;
     }
-    if (!Validator::isValidPhone(tutor->getPhone())) {
-        cout << "[Loi] " << Validator::getPhoneError(tutor->getPhone()) << "\n";
+    if (!Validator::sdt_hop_le(tutor->getPhone())) {
+        cout << "[Loi] " << Validator::loi_sdt(tutor->getPhone()) << "\n";
         return false;
     }
-    if (!Validator::isValidEmail(tutor->getEmail())) {
-        cout << "[Loi] " << Validator::getEmailError(tutor->getEmail()) << "\n";
+    if (!Validator::email_hop_le(tutor->getEmail())) {
+        cout << "[Loi] " << Validator::loi_email(tutor->getEmail()) << "\n";
         return false;
     }
-    if (!Validator::isValidExpYears(tutor->getExpYears())) {
+    if (!Validator::kinh_nghiem_hop_le(tutor->getExpYears())) {
         cout << "[Loi] So nam kinh nghiem phai >= 0!\n";
         return false;
     }
@@ -153,7 +153,7 @@ bool CenterService::addTutor(Tutor* tutor) {
     if (tutor->getId().empty()) {
         tutor->setId(IdGenerator::generateTutorId());
     } else {
-        IdGenerator::syncFromExistingId(tutor->getId());
+        IdGenerator::dong_bo_ma(tutor->getId());
     }
 
     if (tutorRepo.findById(tutor->getId()) != nullptr) {
@@ -166,33 +166,33 @@ bool CenterService::addTutor(Tutor* tutor) {
 namespace {
 
 // kiem tra phan chung cua ho so, tra ve "" neu hop le
-string validateCommonProfile(const string& fullName, const string& phone, const string& email,
+string kiem_tra_ho_so(const string& fullName, const string& phone, const string& email,
                              const string& gender, const string& dob) {
-    if (!Validator::isNotEmpty(fullName)) return "Ho va ten khong duoc de trong!";
-    if (!Validator::isValidName(fullName)) return "Ho va ten chi duoc chua chu cai va khoang trang!";
-    if (!Validator::isValidPhone(phone)) return Validator::getPhoneError(phone);
-    if (!Validator::isNotEmpty(email)) return "Email khong duoc de trong!";
-    if (!Validator::isValidEmail(email)) {
-        string why = Validator::getEmailError(email);
+    if (!Validator::khong_rong(fullName)) return "Ho va ten khong duoc de trong!";
+    if (!Validator::ten_hop_le(fullName)) return "Ho va ten chi duoc chua chu cai va khoang trang!";
+    if (!Validator::sdt_hop_le(phone)) return Validator::loi_sdt(phone);
+    if (!Validator::khong_rong(email)) return "Email khong duoc de trong!";
+    if (!Validator::email_hop_le(email)) {
+        string why = Validator::loi_email(email);
         return why.empty() ? "Email khong hop le!" : why;
     }
-    if (!gender.empty() && !Validator::isValidGender(gender)) return "Gioi tinh chi nhan 'Nam' hoac 'Nu'!";
-    if (!dob.empty() && !Validator::isValidDate(dob)) return Validator::getDateError(dob);
+    if (!gender.empty() && !Validator::gioi_tinh_hop_le(gender)) return "Gioi tinh chi nhan 'Nam' hoac 'Nu'!";
+    if (!dob.empty() && !Validator::ngay_hop_le(dob)) return Validator::loi_ngay(dob);
     return "";
 }
 
 }  // namespace
 
-bool CenterService::updateStudentProfile(const string& id, const StudentProfile& p, string* outError) {
-    Student* st = findStudentById(id);
+bool CenterService::sua_ho_so_hv(const string& id, const StudentProfile& p, string* outError) {
+    Student* st = tim_hoc_vien(id);
     if (st == nullptr) {
-        StringUtils::assign(outError, "Khong tim thay Hoc vien " + id + "!");
+        StringUtils::gan(outError, "Khong tim thay Hoc vien " + id + "!");
         return false;
     }
-    string err = validateCommonProfile(p.fullName, p.phone, p.email, p.gender, p.dateOfBirth);
+    string err = kiem_tra_ho_so(p.fullName, p.phone, p.email, p.gender, p.dateOfBirth);
     if (err.empty() && p.budget < 0) err = "Hoc phi mong muon khong duoc am!";
     if (!err.empty()) {
-        StringUtils::assign(outError, err);
+        StringUtils::gan(outError, err);
         return false;
     }
 
@@ -210,16 +210,16 @@ bool CenterService::updateStudentProfile(const string& id, const StudentProfile&
     return true;
 }
 
-bool CenterService::updateTutorProfile(const string& id, const TutorProfile& p, string* outError) {
-    Tutor* tu = findTutorById(id);
+bool CenterService::sua_ho_so_gs(const string& id, const TutorProfile& p, string* outError) {
+    Tutor* tu = tim_gia_su(id);
     if (tu == nullptr) {
-        StringUtils::assign(outError, "Khong tim thay Gia su " + id + "!");
+        StringUtils::gan(outError, "Khong tim thay Gia su " + id + "!");
         return false;
     }
-    string err = validateCommonProfile(p.fullName, p.phone, p.email, p.gender, p.dateOfBirth);
-    if (err.empty() && !Validator::isValidExpYears(p.expYears)) err = "So nam kinh nghiem phai >= 0!";
+    string err = kiem_tra_ho_so(p.fullName, p.phone, p.email, p.gender, p.dateOfBirth);
+    if (err.empty() && !Validator::kinh_nghiem_hop_le(p.expYears)) err = "So nam kinh nghiem phai >= 0!";
     if (!err.empty()) {
-        StringUtils::assign(outError, err);
+        StringUtils::gan(outError, err);
         return false;
     }
 
@@ -238,87 +238,61 @@ bool CenterService::updateTutorProfile(const string& id, const TutorProfile& p, 
     return true;
 }
 
-Student* CenterService::findStudentById(const string& id) const {
+Student* CenterService::tim_hoc_vien(const string& id) const {
     return studentRepo.findById(id);
 }
 
-Tutor* CenterService::findTutorById(const string& id) const {
+Tutor* CenterService::tim_gia_su(const string& id) const {
     return tutorRepo.findById(id);
-}
-
-void CenterService::displayAllStudents() const {
-    cout << "\n===== DANH SACH HOC VIEN (" << studentRepo.size() << ") =====\n";
-    Node<Student*>* cur = studentRepo.getAll().getHead();
-    while (cur != nullptr) {
-        cur->data->display();
-        cur = cur->next;
-    }
-}
-
-void CenterService::displayAllTutors() const {
-    cout << "\n===== DANH SACH GIA SU (" << tutorRepo.size() << ") =====\n";
-    Node<Tutor*>* cur = tutorRepo.getAll().getHead();
-    while (cur != nullptr) {
-        cur->data->display();
-        cur = cur->next;
-    }
 }
 
 // gia su mo ca
 
-bool CenterService::tutorOpenClass(const string& tutorId, const string& subject,
+bool CenterService::mo_lop(const string& tutorId, const string& subject,
                                    const string& schedule, double tuitionFee,
                                    const string& startDate, const string& endDate,
                                    string* outClassId, string* outError) {
     if (tutorRepo.findById(tutorId) == nullptr) {
-        cout << "[Loi] Khong tim thay Gia su co ma " << tutorId << "!\n";
-        StringUtils::assign(outError, "Khong tim thay Gia su co ma " + tutorId + "!");
+        StringUtils::gan(outError, "Khong tim thay Gia su co ma " + tutorId + "!");
         return false;
     }
 
     Schedule parsed;
     string scheduleErr;
-    if (!Schedule::parse(schedule, parsed, &scheduleErr)) {
-        cout << "[Loi] Lich hoc khong hop le! " << scheduleErr << "\n";
-        StringUtils::assign(outError, scheduleErr);
+    if (!Schedule::doc_lich(schedule, parsed, &scheduleErr)) {
+        StringUtils::gan(outError, scheduleErr);
         return false;
     }
-    if (!Validator::isValidFee(tuitionFee)) {
-        cout << "[Loi] Hoc phi phai lon hon 0!\n";
-        StringUtils::assign(outError, "Hoc phi phai lon hon 0!");
+    if (!Validator::hoc_phi_hop_le(tuitionFee)) {
+        StringUtils::gan(outError, "Hoc phi phai lon hon 0!");
         return false;
     }
-    if (!Validator::isNotEmpty(subject)) {
-        cout << "[Loi] Ten mon hoc khong duoc de trong!\n";
-        StringUtils::assign(outError, "Ten mon hoc khong duoc de trong!");
+    if (!Validator::khong_rong(subject)) {
+        StringUtils::gan(outError, "Ten mon hoc khong duoc de trong!");
         return false;
     }
-    if (StringUtils::containsAny(subject, "|\r\n")) {
-        cout << "[Loi] Ten mon hoc khong duoc chua ky tu '|' hoac xuong dong!\n";
-        StringUtils::assign(outError, "Ten mon hoc khong duoc chua ky tu '|' hoac xuong dong!");
+    if (StringUtils::co_ky_tu(subject, "|\r\n")) {
+        StringUtils::gan(outError, "Ten mon hoc khong duoc chua ky tu '|' hoac xuong dong!");
         return false;
     }
 
     // ngay bat dau / ket thuc co thi phai hop le, bat dau <= ket thuc
-    if ((!startDate.empty() && !Validator::isValidDate(startDate)) ||
-        (!endDate.empty() && !Validator::isValidDate(endDate))) {
-        cout << "[Loi] Ngay bat dau/ket thuc khong hop le (dd/mm/yyyy)!\n";
-        StringUtils::assign(outError, "Ngay bat dau/ket thuc khong hop le (dung dd/mm/yyyy)!");
+    if ((!startDate.empty() && !Validator::ngay_hop_le(startDate)) ||
+        (!endDate.empty() && !Validator::ngay_hop_le(endDate))) {
+        StringUtils::gan(outError, "Ngay bat dau/ket thuc khong hop le (dung dd/mm/yyyy)!");
         return false;
     }
-    if (!startDate.empty() && !endDate.empty() && Validator::compareDates(endDate, startDate) < 0) {
-        cout << "[Loi] Ngay ket thuc phai sau ngay bat dau!\n";
-        StringUtils::assign(outError, "Ngay ket thuc phai sau ngay bat dau!");
+    if (!startDate.empty() && !endDate.empty() && Validator::so_sanh_ngay(endDate, startDate) < 0) {
+        StringUtils::gan(outError, "Ngay ket thuc phai sau ngay bat dau!");
         return false;
     }
 
     // gia su khong day 2 ca cung luc
-    Class* conflict = findTutorConflict(tutorId, parsed);
+    Class* conflict = tim_trung_lich_gia_su(tutorId, parsed);
     if (conflict != nullptr) {
         string msg = "Lich bi trung voi ca " + conflict->getClassId() + " (" +
                      conflict->getSubject() + ": " + conflict->getSchedule() + ") cua ban!";
-        cout << "[Loi] " << msg << "\n";
-        StringUtils::assign(outError, msg);
+        StringUtils::gan(outError, msg);
         return false;
     }
 
@@ -326,7 +300,7 @@ bool CenterService::tutorOpenClass(const string& tutorId, const string& subject,
     string classId = IdGenerator::generateClassId();
     if (outClassId != nullptr) *outClassId = classId;
 
-    Class* newClass = new Class(classId, "", "", tutorId, subject, parsed.toString(),
+    Class* newClass = new Class(classId, "", "", tutorId, subject, parsed.chuoi_luu(),
                                 startDate, endDate, "AVAILABLE", tuitionFee);
     classRepo.add(newClass);
 
@@ -335,64 +309,34 @@ bool CenterService::tutorOpenClass(const string& tutorId, const string& subject,
     return true;
 }
 
-// tim ca con trong
-
-void CenterService::displayAvailableClassesBySubject(const string& subject) const {
-    cout << "\n===== KHUNG GIO HOC CON TRONG THEO MON: \"" << subject << "\" =====\n";
-    int count = 0;
-    Node<Class*>* cur = classRepo.getAll().getHead();
-    while (cur != nullptr) {
-        Class* c = cur->data;
-        if (c->getStatus() == "AVAILABLE" && StringUtils::containsIgnoreCase(c->getSubject(), subject)) {
-            count++;
-            Tutor* t = findTutorById(c->getTutorId());
-            string tutorName = (t != nullptr) ? t->getFullName() : "N/A";
-
-            cout << "  [" << count << "] Ma Lop: " << c->getClassId()
-                 << " | Mon: " << c->getSubject()
-                 << " | Lich hoc: " << c->getSchedule()
-                 << " | Hoc phi: " << c->getTuitionFee() << " VND"
-                 << " | Gia su: " << tutorName << " (" << c->getTutorId() << ")\n";
-        }
-        cur = cur->next;
-    }
-    if (count == 0) {
-        cout << "  (Khong co ca hoc nao phu hop dang trong)\n";
-    }
-}
-
 // hoc vien dat ca
 
-bool CenterService::studentBookClass(const string& studentId, const string& classId,
+bool CenterService::dang_ky_lop(const string& studentId, const string& classId,
                                      string* outError) {
     if (studentRepo.findById(studentId) == nullptr) {
-        cout << "[Loi] Khong tim thay Hoc vien " << studentId << "!\n";
-        StringUtils::assign(outError, "Khong tim thay Hoc vien " + studentId + "!");
+        StringUtils::gan(outError, "Khong tim thay Hoc vien " + studentId + "!");
         return false;
     }
 
     Class* cls = classRepo.findById(classId);
     if (cls == nullptr) {
-        cout << "[Loi] Khong tim thay Lop hoc " << classId << "!\n";
-        StringUtils::assign(outError, "Khong tim thay Lop hoc " + classId + "!");
+        StringUtils::gan(outError, "Khong tim thay Lop hoc " + classId + "!");
         return false;
     }
 
     if (cls->getStatus() != "AVAILABLE") {
-        cout << "[Loi] Ca hoc " << classId << " da duoc nguoi khac chon hoac dang hoat dong!\n";
-        StringUtils::assign(outError, "Ca hoc " + classId + " da duoc nguoi khac chon hoac dang hoat dong!");
+        StringUtils::gan(outError, "Ca hoc " + classId + " da duoc nguoi khac chon hoac dang hoat dong!");
         return false;
     }
 
     // hoc vien khong hoc 2 ca cung luc
     Schedule wanted;
-    if (Schedule::parse(cls->getSchedule(), wanted, nullptr)) {
-        Class* conflict = findStudentConflict(studentId, wanted);
+    if (Schedule::doc_lich(cls->getSchedule(), wanted, nullptr)) {
+        Class* conflict = tim_trung_lich_hoc_vien(studentId, wanted);
         if (conflict != nullptr) {
             string msg = "Lich bi trung voi lop " + conflict->getClassId() + " (" +
                          conflict->getSubject() + ": " + conflict->getSchedule() + ") ban da dang ky!";
-            cout << "[Loi] " << msg << "\n";
-            StringUtils::assign(outError, msg);
+            StringUtils::gan(outError, msg);
             return false;
         }
     }
@@ -409,32 +353,7 @@ bool CenterService::studentBookClass(const string& studentId, const string& clas
 
 // gia su duyet / tu choi
 
-void CenterService::displayPendingRequestsByTutor(const string& tutorId) const {
-    cout << "\n===== YEU CAU CHO DUYET CUA GIA SU " << tutorId << " =====\n";
-    int count = 0;
-    Node<Class*>* cur = classRepo.getAll().getHead();
-    while (cur != nullptr) {
-        Class* c = cur->data;
-        if (c->getTutorId() == tutorId && c->getStatus() == "PENDING") {
-            count++;
-            Student* st = findStudentById(c->getStudentId());
-            string studentName = (st != nullptr) ? st->getFullName() : "N/A";
-            string studentPhone = (st != nullptr) ? st->getPhone() : "N/A";
-
-            cout << "  [" << count << "] Ma Lop: " << c->getClassId()
-                 << " | Mon: " << c->getSubject()
-                 << " | Lich: " << c->getSchedule()
-                 << " | Hoc sinh DK: " << studentName << " (ID: " << c->getStudentId() 
-                 << " - SDT: " << studentPhone << ")\n";
-        }
-        cur = cur->next;
-    }
-    if (count == 0) {
-        cout << "  (Khong co yeu cau nao dang cho duyet)\n";
-    }
-}
-
-bool CenterService::tutorApproveClass(const string& tutorId, const string& classId) {
+bool CenterService::duyet_lop(const string& tutorId, const string& classId) {
     Class* cls = classRepo.findById(classId);
     if (cls == nullptr) {
         cout << "[Loi] Khong tim thay Lop hoc " << classId << "!\n";
@@ -463,7 +382,7 @@ bool CenterService::tutorApproveClass(const string& tutorId, const string& class
     cls->setStatus("ACTIVE");
 
     // danh dau hoc vien da co gia su
-    Student* st = findStudentById(cls->getStudentId());
+    Student* st = tim_hoc_vien(cls->getStudentId());
     if (st != nullptr) {
         st->setHasTutor(true);
         studentRepo.update(st);
@@ -475,7 +394,7 @@ bool CenterService::tutorApproveClass(const string& tutorId, const string& class
     return true;
 }
 
-bool CenterService::tutorRejectClass(const string& tutorId, const string& classId) {
+bool CenterService::tu_choi_lop(const string& tutorId, const string& classId) {
     Class* cls = classRepo.findById(classId);
     if (cls == nullptr) {
         cout << "[Loi] Khong tim thay Lop hoc " << classId << "!\n";
@@ -502,19 +421,19 @@ bool CenterService::tutorRejectClass(const string& tutorId, const string& classI
     return true;
 }
 
-bool CenterService::tutorDeleteClass(const string& tutorId, const string& classId, string* outError) {
+bool CenterService::xoa_lop_trong(const string& tutorId, const string& classId, string* outError) {
     Class* cls = classRepo.findById(classId);
     if (cls == nullptr) {
-        StringUtils::assign(outError, "Khong tim thay Lop hoc " + classId + "!");
+        StringUtils::gan(outError, "Khong tim thay Lop hoc " + classId + "!");
         return false;
     }
     if (cls->getTutorId() != tutorId) {
-        StringUtils::assign(outError, "Lop hoc " + classId + " khong thuoc ve Gia su " + tutorId + "!");
+        StringUtils::gan(outError, "Lop hoc " + classId + " khong thuoc ve Gia su " + tutorId + "!");
         return false;
     }
     // chi xoa lop chua lien quan toi hoc vien nao
     if (cls->getStatus() != "AVAILABLE") {
-        StringUtils::assign(outError, "Chi xoa duoc lop trong (AVAILABLE), lop " + classId +
+        StringUtils::gan(outError, "Chi xoa duoc lop trong (AVAILABLE), lop " + classId +
                                       " dang o trang thai " + cls->getStatus() + "!");
         return false;
     }
@@ -523,18 +442,18 @@ bool CenterService::tutorDeleteClass(const string& tutorId, const string& classI
     return true;
 }
 
-bool CenterService::studentCancelBooking(const string& studentId, const string& classId, string* outError) {
+bool CenterService::rut_dang_ky(const string& studentId, const string& classId, string* outError) {
     Class* cls = classRepo.findById(classId);
     if (cls == nullptr) {
-        StringUtils::assign(outError, "Khong tim thay Lop hoc " + classId + "!");
+        StringUtils::gan(outError, "Khong tim thay Lop hoc " + classId + "!");
         return false;
     }
     if (cls->getStudentId() != studentId) {
-        StringUtils::assign(outError, "Ban khong dang ky lop " + classId + "!");
+        StringUtils::gan(outError, "Ban khong dang ky lop " + classId + "!");
         return false;
     }
     if (cls->getStatus() != "PENDING") {
-        StringUtils::assign(outError, "Chi rut duoc lop dang cho duyet (PENDING)!");
+        StringUtils::gan(outError, "Chi rut duoc lop dang cho duyet (PENDING)!");
         return false;
     }
     // tra lop ve trong cho nguoi khac
@@ -545,118 +464,40 @@ bool CenterService::studentCancelBooking(const string& studentId, const string& 
     return true;
 }
 
-// lop cua toi
+// tra cuu lop & hop dong
 
-void CenterService::displayClassesByStudent(const string& studentId) const {
-    cout << "\n===== DANH SACH LOP CUA HOC VIEN: " << studentId << " =====\n";
-    int count = 0;
-    Node<Class*>* cur = classRepo.getAll().getHead();
-    while (cur != nullptr) {
-        Class* c = cur->data;
-        if (c->getStudentId() == studentId) {
-            count++;
-            Tutor* t = findTutorById(c->getTutorId());
-            string tutorName = (t != nullptr) ? t->getFullName() : "N/A";
-
-            cout << "  [" << count << "] Ma Lop: " << c->getClassId()
-                 << " | Mon: " << c->getSubject()
-                 << " | Lich: " << c->getSchedule()
-                 << " | Gia su: " << tutorName << " (" << c->getTutorId() << ")"
-                 << " | Trang thai: " << c->getStatus();
-            if (!c->getContractId().empty()) {
-                cout << " | Ma HD: " << c->getContractId();
-            }
-            cout << "\n";
-        }
-        cur = cur->next;
-    }
-    if (count == 0) {
-        cout << "  (Hoc vien chua dang ky lop nao)\n";
-    }
-}
-
-void CenterService::displayClassesByTutor(const string& tutorId) const {
-    cout << "\n===== DANH SACH LOP CUA GIA SU: " << tutorId << " =====\n";
-    int count = 0;
-    Node<Class*>* cur = classRepo.getAll().getHead();
-    while (cur != nullptr) {
-        Class* c = cur->data;
-        if (c->getTutorId() == tutorId) {
-            count++;
-            cout << "  [" << count << "] Ma Lop: " << c->getClassId()
-                 << " | Mon: " << c->getSubject()
-                 << " | Lich: " << c->getSchedule()
-                 << " | Hoc phi: " << c->getTuitionFee() << " VND"
-                 << " | Trang thai: " << c->getStatus();
-            if (!c->getStudentId().empty()) {
-                Student* st = findStudentById(c->getStudentId());
-                string studentName = (st != nullptr) ? st->getFullName() : "N/A";
-                cout << " | Hoc vien: " << studentName << " (" << c->getStudentId() << ")";
-            }
-            if (!c->getContractId().empty()) {
-                cout << " | Ma HD: " << c->getContractId();
-            }
-            cout << "\n";
-        }
-        cur = cur->next;
-    }
-    if (count == 0) {
-        cout << "  (Gia su chua mo ca hoc nao)\n";
-    }
-}
-
-// hop dong & tat ca lop
-
-Contract* CenterService::findContractById(const string& contractId) const {
+Contract* CenterService::tim_hop_dong(const string& contractId) const {
     return contractRepo.findById(contractId);
 }
 
-Class* CenterService::findClassById(const string& classId) const {
+Class* CenterService::tim_lop(const string& classId) const {
     return classRepo.findById(classId);
-}
-
-void CenterService::displayAllClasses() const {
-    cout << "\n===== TOAN BO DANH SACH LOP HOC (" << classRepo.size() << ") =====\n";
-    Node<Class*>* cur = classRepo.getAll().getHead();
-    while (cur != nullptr) {
-        cur->data->display();
-        cur = cur->next;
-    }
-}
-
-void CenterService::displayAllContracts() const {
-    cout << "\n===== TOAN BO DANH SACH HOP DONG (" << contractRepo.size() << ") =====\n";
-    Node<Contract*>* cur = contractRepo.getAll().getHead();
-    while (cur != nullptr) {
-        cur->data->display();
-        cur = cur->next;
-    }
 }
 
 // ket thuc hop dong
 
-Contract* CenterService::findOwnContract(const string& personId, const string& contractId,
+Contract* CenterService::tim_hop_dong_cua(const string& personId, const string& contractId,
                                          const string& status, string* outError) const {
     Contract* ct = contractRepo.findById(contractId);
     if (ct == nullptr) {
-        StringUtils::assign(outError, "Khong tim thay Hop dong " + contractId + "!");
+        StringUtils::gan(outError, "Khong tim thay Hop dong " + contractId + "!");
         return nullptr;
     }
     if (personId.empty() || (ct->getTutorId() != personId && ct->getStudentId() != personId)) {
-        StringUtils::assign(outError, "Ban khong phai mot ben cua hop dong " + contractId + "!");
+        StringUtils::gan(outError, "Ban khong phai mot ben cua hop dong " + contractId + "!");
         return nullptr;
     }
     if (ct->getStatus() != status) {
-        StringUtils::assign(outError, "Hop dong " + contractId + " dang o trang thai " +
+        StringUtils::gan(outError, "Hop dong " + contractId + " dang o trang thai " +
                                       ct->getStatus() + ", can " + status + "!");
         return nullptr;
     }
     return ct;
 }
 
-void CenterService::finishContract(Contract* ct) {
+void CenterService::ket_thuc_hop_dong(Contract* ct) {
     ct->setStatus("Ended");
-    ct->setEndedOn(Validator::today());
+    ct->setEndedOn(Validator::hom_nay());
     contractRepo.update(ct);
 
     // lop cua hop dong: luu lich su, giai phong lich
@@ -667,22 +508,22 @@ void CenterService::finishContract(Contract* ct) {
         }
     }
 
-    Student* st = findStudentById(ct->getStudentId());
+    Student* st = tim_hoc_vien(ct->getStudentId());
     if (st != nullptr) {
-        st->setHasTutor(hasOpenContract(st->getId()));
+        st->setHasTutor(con_hop_dong_mo(st->getId()));
         studentRepo.update(st);
     }
     cout << "[Thong Bao] Hop dong " << ct->getContractId() << " da ket thuc\n";
 }
 
-bool CenterService::requestEndContract(const string& personId, const string& contractId,
+bool CenterService::yeu_cau_ket_thuc(const string& personId, const string& contractId,
                                        const string& reason, string* outError) {
     string why = StringUtils::trim(reason);
-    if (!Validator::isNotEmpty(why)) {
-        StringUtils::assign(outError, "Vui long nhap ly do ket thuc hop dong!");
+    if (!Validator::khong_rong(why)) {
+        StringUtils::gan(outError, "Vui long nhap ly do ket thuc hop dong!");
         return false;
     }
-    Contract* ct = findOwnContract(personId, contractId, "Active", outError);
+    Contract* ct = tim_hop_dong_cua(personId, contractId, "Active", outError);
     if (ct == nullptr) return false;
 
     ct->setStatus("EndRequested");
@@ -692,20 +533,20 @@ bool CenterService::requestEndContract(const string& personId, const string& con
     return true;
 }
 
-bool CenterService::confirmEndContract(const string& personId, const string& contractId, string* outError) {
-    Contract* ct = findOwnContract(personId, contractId, "EndRequested", outError);
+bool CenterService::dong_y_ket_thuc(const string& personId, const string& contractId, string* outError) {
+    Contract* ct = tim_hop_dong_cua(personId, contractId, "EndRequested", outError);
     if (ct == nullptr) return false;
     // nguoi yeu cau khong tu dong y
     if (ct->getRequestedBy() == personId) {
-        StringUtils::assign(outError, "Can ben con lai dong y ket thuc hop dong!");
+        StringUtils::gan(outError, "Can ben con lai dong y ket thuc hop dong!");
         return false;
     }
-    finishContract(ct);
+    ket_thuc_hop_dong(ct);
     return true;
 }
 
-bool CenterService::cancelEndRequest(const string& personId, const string& contractId, string* outError) {
-    Contract* ct = findOwnContract(personId, contractId, "EndRequested", outError);
+bool CenterService::huy_yeu_cau_ket_thuc(const string& personId, const string& contractId, string* outError) {
+    Contract* ct = tim_hop_dong_cua(personId, contractId, "EndRequested", outError);
     if (ct == nullptr) return false;
     // nguoi yeu cau rut lai, hoac ben con lai tu choi
     ct->setStatus("Active");
@@ -715,24 +556,24 @@ bool CenterService::cancelEndRequest(const string& personId, const string& contr
     return true;
 }
 
-bool CenterService::adminEndContract(const string& contractId, const string& reason, string* outError) {
+bool CenterService::admin_ket_thuc(const string& contractId, const string& reason, string* outError) {
     Contract* ct = contractRepo.findById(contractId);
     if (ct == nullptr) {
-        StringUtils::assign(outError, "Khong tim thay Hop dong " + contractId + "!");
+        StringUtils::gan(outError, "Khong tim thay Hop dong " + contractId + "!");
         return false;
     }
     if (ct->getStatus() != "Active" && ct->getStatus() != "EndRequested") {
-        StringUtils::assign(outError, "Hop dong " + contractId + " da ket thuc!");
+        StringUtils::gan(outError, "Hop dong " + contractId + " da ket thuc!");
         return false;
     }
     string why = StringUtils::trim(reason);
     ct->setRequestedBy("ADMIN");
     ct->setEndReason(why.empty() ? "Admin ket thuc" : why);
-    finishContract(ct);
+    ket_thuc_hop_dong(ct);
     return true;
 }
 
-bool CenterService::hasOpenContract(const string& personId) const {
+bool CenterService::con_hop_dong_mo(const string& personId) const {
     for (Contract* ct : contractRepo.toVector()) {
         bool party = ct->getTutorId() == personId || ct->getStudentId() == personId;
         if (party && (ct->getStatus() == "Active" || ct->getStatus() == "EndRequested")) return true;
@@ -745,7 +586,7 @@ bool CenterService::hasOpenContract(const string& personId) const {
 namespace {
 
 // dem hop dong da ket thuc cua 1 nguoi
-int countEndedContracts(const vector<Contract*>& contracts, const string& personId) {
+int dem_hop_dong_da_ket_thuc(const vector<Contract*>& contracts, const string& personId) {
     int n = 0;
     for (Contract* ct : contracts) {
         bool party = ct->getTutorId() == personId || ct->getStudentId() == personId;
@@ -756,31 +597,31 @@ int countEndedContracts(const vector<Contract*>& contracts, const string& person
 
 }  // namespace
 
-DeleteImpact CenterService::previewRemoveStudent(const string& id) const {
+DeleteImpact CenterService::xem_truoc_xoa_hv(const string& id) const {
     DeleteImpact impact;
-    if (findStudentById(id) == nullptr) {
+    if (tim_hoc_vien(id) == nullptr) {
         impact.reason = "Khong tim thay Hoc vien " + id + "!";
         return impact;
     }
-    if (hasOpenContract(id)) {
+    if (con_hop_dong_mo(id)) {
         impact.reason = "Hoc vien " + id + " con hop dong dang hieu luc, can ket thuc hop dong truoc!";
         return impact;
     }
     for (Class* c : classRepo.toVector()) {
         if (c->getStudentId() == id && c->getStatus() == "PENDING") impact.releasedClasses.push_back(c->getClassId());
     }
-    impact.keptHistory = countEndedContracts(contractRepo.toVector(), id);
+    impact.keptHistory = dem_hop_dong_da_ket_thuc(contractRepo.toVector(), id);
     impact.allowed = true;
     return impact;
 }
 
-DeleteImpact CenterService::previewRemoveTutor(const string& id) const {
+DeleteImpact CenterService::xem_truoc_xoa_gs(const string& id) const {
     DeleteImpact impact;
-    if (findTutorById(id) == nullptr) {
+    if (tim_gia_su(id) == nullptr) {
         impact.reason = "Khong tim thay Gia su " + id + "!";
         return impact;
     }
-    if (hasOpenContract(id)) {
+    if (con_hop_dong_mo(id)) {
         impact.reason = "Gia su " + id + " con hop dong dang hieu luc, can ket thuc hop dong truoc!";
         return impact;
     }
@@ -788,13 +629,13 @@ DeleteImpact CenterService::previewRemoveTutor(const string& id) const {
         bool open = c->getStatus() == "AVAILABLE" || c->getStatus() == "PENDING";
         if (c->getTutorId() == id && open) impact.deletedClasses.push_back(c->getClassId());
     }
-    impact.keptHistory = countEndedContracts(contractRepo.toVector(), id);
+    impact.keptHistory = dem_hop_dong_da_ket_thuc(contractRepo.toVector(), id);
     impact.allowed = true;
     return impact;
 }
 
-void CenterService::releaseStudentClasses(const string& id) {
-    for (const string& classId : previewRemoveStudent(id).releasedClasses) {
+void CenterService::tra_lop_cua_hv(const string& id) {
+    for (const string& classId : xem_truoc_xoa_hv(id).releasedClasses) {
         Class* c = classRepo.findById(classId);
         c->setStudentId("");
         c->setStatus("AVAILABLE");
@@ -802,16 +643,16 @@ void CenterService::releaseStudentClasses(const string& id) {
     }
 }
 
-void CenterService::removeTutorOpenClasses(const string& id) {
-    for (const string& classId : previewRemoveTutor(id).deletedClasses) classRepo.remove(classId);
+void CenterService::xoa_lop_mo_cua_gs(const string& id) {
+    for (const string& classId : xem_truoc_xoa_gs(id).deletedClasses) classRepo.remove(classId);
 }
 
-bool CenterService::removeStudentProfile(const string& id) {
-    if (hasOpenContract(id)) return false;
+bool CenterService::xoa_ho_so_hv(const string& id) {
+    if (con_hop_dong_mo(id)) return false;
     return studentRepo.remove(id);
 }
 
-bool CenterService::removeTutorProfile(const string& id) {
-    if (hasOpenContract(id)) return false;
+bool CenterService::xoa_ho_so_gs(const string& id) {
+    if (con_hop_dong_mo(id)) return false;
     return tutorRepo.remove(id);
 }

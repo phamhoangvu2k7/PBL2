@@ -12,7 +12,7 @@ vector<string> StudentRepository::toRecord(const Student& s) const {
 
 Student* StudentRepository::fromRecord(const vector<string>& r) const {
     if (r.size() < 13 || r[0].empty()) return nullptr;
-    IdGenerator::syncFromExistingId(r[0]);
+    IdGenerator::dong_bo_ma(r[0]);
     return new Student(r[0], r[1], r[2], r[3], r[4], r[5], r[6], r[7], r[8], r[9],
                        StringUtils::toDouble(r[10]), r[11] == "1", r[12]);
 }

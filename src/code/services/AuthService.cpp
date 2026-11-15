@@ -8,9 +8,9 @@ using namespace std;
 
 namespace {
 
-bool fail(string* outError, const string& msg) {
+bool bao_loi(string* outError, const string& msg) {
     cout << "[Loi] " << msg << "\n";
-    StringUtils::assign(outError, msg);
+    StringUtils::gan(outError, msg);
     return false;
 }
 
@@ -39,42 +39,42 @@ bool AuthService::registerAccount(const string& username, const string& password
 
     // kiem tra dau vao
     if (username.empty() || password.empty()) {
-        return fail(outError, "Username va mat khau khong duoc de trong!");
+        return bao_loi(outError, "Username va mat khau khong duoc de trong!");
     }
-    if (StringUtils::hasWhitespace(username) || StringUtils::containsAny(username, "|\r\n")) {
-        return fail(outError, "Ten dang nhap khong duoc chua khoang trang hoac ky tu '|'!");
+    if (StringUtils::co_khoang_trang(username) || StringUtils::co_ky_tu(username, "|\r\n")) {
+        return bao_loi(outError, "Ten dang nhap khong duoc chua khoang trang hoac ky tu '|'!");
     }
     if (accountRepo.findByUsername(username) != nullptr) {
-        return fail(outError, "Username '" + username + "' da ton tai!");
+        return bao_loi(outError, "Username '" + username + "' da ton tai!");
     }
     if (password.length() < 6) {
-        return fail(outError, "Mat khau phai co it nhat 6 ky tu!");
+        return bao_loi(outError, "Mat khau phai co it nhat 6 ky tu!");
     }
     if (role != "Student" && role != "Tutor" && role != "Admin") {
-        return fail(outError, "Vai tro khong hop le!");
+        return bao_loi(outError, "Vai tro khong hop le!");
     }
 
     // Student/Tutor bat buoc co ten, sdt, email
     if (role != "Admin") {
-        if (!Validator::isNotEmpty(fullName)) {
-            return fail(outError, "Ho va ten khong duoc de trong!");
+        if (!Validator::khong_rong(fullName)) {
+            return bao_loi(outError, "Ho va ten khong duoc de trong!");
         }
-        if (!Validator::isValidName(fullName) || StringUtils::containsAny(fullName, "|\r\n")) {
-            return fail(outError, "Ho va ten chi duoc chua chu cai va khoang trang!");
+        if (!Validator::ten_hop_le(fullName) || StringUtils::co_ky_tu(fullName, "|\r\n")) {
+            return bao_loi(outError, "Ho va ten chi duoc chua chu cai va khoang trang!");
         }
-        if (!Validator::isValidPhone(phone)) {
-            return fail(outError, Validator::getPhoneError(phone));
+        if (!Validator::sdt_hop_le(phone)) {
+            return bao_loi(outError, Validator::loi_sdt(phone));
         }
         if (email.empty()) {
-            return fail(outError, "Email khong duoc de trong!");
+            return bao_loi(outError, "Email khong duoc de trong!");
         }
-        if (!Validator::isValidEmail(email) || StringUtils::containsAny(email, "|\r\n") || StringUtils::hasWhitespace(email)) {
-            string why = Validator::getEmailError(email);
-            return fail(outError, why.empty() ? "Email khong hop le!" : why);
+        if (!Validator::email_hop_le(email) || StringUtils::co_ky_tu(email, "|\r\n") || StringUtils::co_khoang_trang(email)) {
+            string why = Validator::loi_email(email);
+            return bao_loi(outError, why.empty() ? "Email khong hop le!" : why);
         }
     }
 
-    // ma SV/GS se cap sau trong assignMissingPersonIds()
+    // ma SV/GS se cap sau trong cap_ma_con_thieu()
     string personId = (role == "Admin") ? "ADMIN" : "";
 
     string accId    = IdGenerator::generateAccountId();
@@ -84,14 +84,14 @@ bool AuthService::registerAccount(const string& username, const string& password
 
     if (!accountRepo.add(newAcc)) {
         delete newAcc;
-        return fail(outError, "Khong the tao tai khoan!");
+        return bao_loi(outError, "Khong the tao tai khoan!");
     }
 
     cout << "[Thanh Cong] Tai khoan '" << username << "' (Role: " << role << ") da duoc tao!\n";
     return true;
 }
 
-int AuthService::assignMissingPersonIds() {
+int AuthService::cap_ma_con_thieu() {
     int count = 0;
     Node<Account*>* cur = accountRepo.getAll().getHead();
     while (cur != nullptr) {
@@ -120,8 +120,7 @@ bool AuthService::login(const string& username, const string& password) {
         return false;
     }
 
-    string inputHash = PasswordHasher::hash(password);
-    if (acc->getPasswordHash() != inputHash) {
+    if (!PasswordHasher::verify(password, acc->getPasswordHash())) {
         cout << "[Loi] Mat khau khong chinh xac!\n";
         return false;
     }
@@ -139,32 +138,32 @@ void AuthService::logout() {
 
 // trang thai dang nhap
 
-bool    AuthService::isLoggedIn()       const { return currentUser != nullptr; }
-Account* AuthService::getCurrentUser()  const { return currentUser; }
+bool    AuthService::da_dang_nhap()       const { return currentUser != nullptr; }
+Account* AuthService::tai_khoan_hien_tai()  const { return currentUser; }
 
-string AuthService::getCurrentRole() const {
+string AuthService::vai_tro_hien_tai() const {
     return currentUser ? currentUser->getRole() : "";
 }
 
-string AuthService::getCurrentPersonId() const {
+string AuthService::ma_nguoi_hien_tai() const {
     return currentUser ? currentUser->getPersonId() : "";
 }
 
-string AuthService::getCurrentDisplayName() const {
+string AuthService::ten_hien_tai() const {
     return currentUser ? currentUser->getDisplayName() : "";
 }
 
-bool AuthService::isStudent() const { return currentUser && currentUser->getRole() == "Student"; }
-bool AuthService::isTutor()   const { return currentUser && currentUser->getRole() == "Tutor"; }
-bool AuthService::isAdmin()   const { return currentUser && currentUser->getRole() == "Admin"; }
+bool AuthService::la_hoc_vien() const { return currentUser && currentUser->getRole() == "Student"; }
+bool AuthService::la_gia_su()   const { return currentUser && currentUser->getRole() == "Tutor"; }
+bool AuthService::la_admin()   const { return currentUser && currentUser->getRole() == "Admin"; }
 
-bool AuthService::usernameExists(const string& username) const {
+bool AuthService::username_ton_tai(const string& username) const {
     return accountRepo.findByUsername(username) != nullptr;
 }
 
 // xoa tai khoan
 
-vector<string> AuthService::accountsOfPerson(const string& personId) const {
+vector<string> AuthService::tai_khoan_cua(const string& personId) const {
     vector<string> names;
     for (Account* a : accountRepo.toVector()) {
         if (!personId.empty() && a->getPersonId() == personId) names.push_back(a->getUsername());
@@ -172,21 +171,21 @@ vector<string> AuthService::accountsOfPerson(const string& personId) const {
     return names;
 }
 
-bool AuthService::canRemoveAccountsOfPerson(const string& personId, string* outError) const {
+bool AuthService::co_the_xoa_tai_khoan(const string& personId, string* outError) const {
     if (personId.empty() || personId == "ADMIN") {
-        return fail(outError, "Khong the xoa tai khoan Admin!");
+        return bao_loi(outError, "Khong the xoa tai khoan Admin!");
     }
     for (Account* a : accountRepo.toVector()) {
         if (a->getPersonId() != personId) continue;
-        if (a->getRole() == "Admin") return fail(outError, "Khong the xoa tai khoan Admin!");
-        if (a == currentUser) return fail(outError, "Khong the xoa tai khoan dang dang nhap!");
+        if (a->getRole() == "Admin") return bao_loi(outError, "Khong the xoa tai khoan Admin!");
+        if (a == currentUser) return bao_loi(outError, "Khong the xoa tai khoan dang dang nhap!");
     }
     return true;
 }
 
-bool AuthService::removeAccountsOfPerson(const string& personId, string* outError) {
+bool AuthService::xoa_tai_khoan_cua(const string& personId, string* outError) {
     // kiem tra het truoc, bi chan thi chua xoa gi
-    if (!canRemoveAccountsOfPerson(personId, outError)) return false;
+    if (!co_the_xoa_tai_khoan(personId, outError)) return false;
     for (Account* a : accountRepo.toVector()) {
         if (a->getPersonId() == personId) accountRepo.remove(a->getAccountId());
     }

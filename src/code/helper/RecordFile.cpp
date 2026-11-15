@@ -2,7 +2,7 @@
 #include <cstdio>
 #include <fstream>
 
-string RecordFile::escape(const string& field) {
+string RecordFile::ma_hoa(const string& field) {
     string out;
     for (char c : field) {
         if (c == '\\') out += "\\\\";
@@ -14,7 +14,7 @@ string RecordFile::escape(const string& field) {
     return out;
 }
 
-string RecordFile::unescape(const string& field) {
+string RecordFile::giai_ma(const string& field) {
     string out;
     for (size_t i = 0; i < field.size(); i++) {
         if (field[i] == '\\' && i + 1 < field.size()) {
@@ -27,43 +27,44 @@ string RecordFile::unescape(const string& field) {
     return out;
 }
 
-string RecordFile::join(const vector<string>& fields) {
+string RecordFile::noi_cot(const vector<string>& fields) {
     string out;
     for (size_t i = 0; i < fields.size(); i++) {
         if (i > 0) out += "|";
-        out += escape(fields[i]);
+        out += ma_hoa(fields[i]);
     }
     return out;
 }
 
-vector<string> RecordFile::split(const string& line) {
+vector<string> RecordFile::tach_cot(const string& line) {
     vector<string> fields;
     string cur;
     for (char c : line) {
         if (c == '|') {
-            fields.push_back(unescape(cur));
+            fields.push_back(giai_ma(cur));
             cur.clear();
         } else {
             cur += c;
         }
     }
-    fields.push_back(unescape(cur));
+    fields.push_back(giai_ma(cur));
     return fields;
 }
 
-bool RecordFile::read(const string& path, vector<vector<string>>& records) {
+bool RecordFile::doc_file(const string& path, vector<vector<string>>& records) {
     ifstream f(path);
     if (!f.is_open()) return false;
     string line;
     while (getline(f, line)) {
         if (!line.empty() && line.back() == '\r') line.pop_back();
+        
         if (line.empty()) continue;
-        records.push_back(split(line));
+        records.push_back(tach_cot(line));
     }
     return true;
 }
 
-bool RecordFile::write(const string& path, const vector<string>& lines) {
+bool RecordFile::ghi_file(const string& path, const vector<string>& lines) {
     string tmp = path + ".tmp";
     {
         ofstream f(tmp);

@@ -24,7 +24,6 @@ public:
     virtual ~Person();
 
     string getId() const;
-    string getUid() const;
     string getFullName() const;
     string getPhone() const;
     string getEmail() const;

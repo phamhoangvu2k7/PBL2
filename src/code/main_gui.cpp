@@ -9,7 +9,7 @@
 int main(int argc, char* argv[]) {
     QApplication app(argc, argv);
 
-    // tang repository: moi repository doc / ghi 1 file txt
+    //5 repo
     AccountRepository accountRepo("src/data/accounts.txt");
     StudentRepository studentRepo("src/data/center_students.txt");
     TutorRepository tutorRepo("src/data/center_tutors.txt");
@@ -17,23 +17,21 @@ int main(int argc, char* argv[]) {
     ContractRepository contractRepo("src/data/center_contracts.txt");
     accountRepo.load();
 
-    // tang service, dung chung cho moi cua so nen doi tai khoan khong mat du lieu
-    AuthService auth(accountRepo);  // admin mac dinh la admin/admin123
+    //service
+    AuthService auth(accountRepo);  // admin/admin123
     CenterService center(studentRepo, tutorRepo, classRepo, contractRepo);
 
-    // nap du lieu da luu, lan dau chua co file thi nap du lieu mau
-    if (!center.loadData()) {
-        seedDemoData(center);
+    if (!center.nap_du_lieu()) {
+        tao_du_lieu_mau(center);
     }
 
     // man hinh dang nhap
     LoginWindow loginWin(auth);
     if (loginWin.exec() != QDialog::Accepted) {
-        return 0;  // dong cua so dang nhap
+        return 0; 
     }
 
     // chua dang nhap thi la che do khach
-    // MainWindow tu xoa khi dong nen khong delete
     MainWindow* mainWin = new MainWindow(&auth, center);
     mainWin->show();
     return app.exec();

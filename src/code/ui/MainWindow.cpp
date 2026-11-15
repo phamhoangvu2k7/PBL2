@@ -26,23 +26,23 @@ MainWindow::MainWindow(AuthService* auth, CenterService& svc, QWidget* parent)
       m_currentPersonId(""), m_currentName("Khach"), m_profileMissing(false) {
     setAttribute(Qt::WA_DeleteOnClose);
 
-    if (m_auth && m_auth->isLoggedIn()) {
+    if (m_auth && m_auth->da_dang_nhap()) {
         // cap ma SV/GS va tao ho so cho tai khoan moi
-        syncProfilesFromAccounts(*m_auth, service);
+        dong_bo_ho_so(*m_auth, service);
 
-        m_currentRole     = UiHelper::toQString(m_auth->getCurrentRole());
-        m_currentPersonId = UiHelper::toQString(m_auth->getCurrentPersonId());
-        m_currentName     = UiHelper::toQString(m_auth->getCurrentDisplayName());
+        m_currentRole     = UiHelper::sang_qstring(m_auth->vai_tro_hien_tai());
+        m_currentPersonId = UiHelper::sang_qstring(m_auth->ma_nguoi_hien_tai());
+        m_currentName     = UiHelper::sang_qstring(m_auth->ten_hien_tai());
 
         // uu tien ten trong ho so
         std::string pid = m_currentPersonId.toStdString();
         if (m_currentRole == "Student") {
-            Student* st = service.findStudentById(pid);
-            if (st) m_currentName = UiHelper::toQString(st->getFullName());
+            Student* st = service.tim_hoc_vien(pid);
+            if (st) m_currentName = UiHelper::sang_qstring(st->getFullName());
             else m_profileMissing = true;
         } else if (m_currentRole == "Tutor") {
-            Tutor* tu = service.findTutorById(pid);
-            if (tu) m_currentName = UiHelper::toQString(tu->getFullName());
+            Tutor* tu = service.tim_gia_su(pid);
+            if (tu) m_currentName = UiHelper::sang_qstring(tu->getFullName());
             else m_profileMissing = true;
         }
     }
@@ -595,14 +595,14 @@ QWidget* MainWindow::createOverviewTab() {
 
 // chi hien thong tin cong khai, khong lo sdt / email / ngay sinh / dia chi
 void MainWindow::showTutorProfile(const QString& tutorId) {
-    Tutor* t = service.findTutorById(tutorId.toStdString());
+    Tutor* t = service.tim_gia_su(tutorId.toStdString());
     if (!t) {
         QMessageBox::warning(this, "Canh bao", "Khong tim thay ho so gia su " + tutorId + "!");
         return;
     }
 
     QDialog dlg(this);
-    dlg.setWindowTitle("Ho So Gia Su - " + UiHelper::toQString(t->getFullName()));
+    dlg.setWindowTitle("Ho So Gia Su - " + UiHelper::sang_qstring(t->getFullName()));
     dlg.setMinimumWidth(480);
 
     QVBoxLayout* root = new QVBoxLayout(&dlg);
@@ -617,16 +617,16 @@ void MainWindow::showTutorProfile(const QString& tutorId) {
         return l;
     };
 
-    QLabel* name = new QLabel(UiHelper::toQString(t->getFullName()));
+    QLabel* name = new QLabel(UiHelper::sang_qstring(t->getFullName()));
     name->setStyleSheet("font-size:16px;font-weight:bold;color:#1e40af;");
     form->addRow("Ho va ten:", name);
-    form->addRow("Ma gia su:", value(UiHelper::toQString(t->getId())));
-    form->addRow("Gioi tinh:", value(UiHelper::toQString(t->getGender())));
-    form->addRow("Mon day:", value(UiHelper::toQString(t->getSubjects())));
-    form->addRow("Bang cap:", value(UiHelper::toQString(t->getQualification())));
+    form->addRow("Ma gia su:", value(UiHelper::sang_qstring(t->getId())));
+    form->addRow("Gioi tinh:", value(UiHelper::sang_qstring(t->getGender())));
+    form->addRow("Mon day:", value(UiHelper::sang_qstring(t->getSubjects())));
+    form->addRow("Bang cap:", value(UiHelper::sang_qstring(t->getQualification())));
     form->addRow("Kinh nghiem:", value(QString::number(t->getExpYears()) + " nam"));
-    form->addRow("Thanh tich:", value(UiHelper::toQString(t->getAchievements())));
-    form->addRow("Lich ranh:", value(UiHelper::toQString(t->getSchedule())));
+    form->addRow("Thanh tich:", value(UiHelper::sang_qstring(t->getAchievements())));
+    form->addRow("Lich ranh:", value(UiHelper::sang_qstring(t->getSchedule())));
     root->addLayout(form);
 
     QDialogButtonBox* buttons = new QDialogButtonBox(QDialogButtonBox::Close);
@@ -752,34 +752,34 @@ void MainWindow::loadProfileForm() {
     bool found = false;
     std::string id = m_currentPersonId.toStdString();
     if (isTutor) {
-        Tutor* t = service.findTutorById(id);
+        Tutor* t = service.tim_gia_su(id);
         if (t) {
             found = true;
-            pfName->setText(UiHelper::toQString(t->getFullName()));
-            pfPhone->setText(UiHelper::toQString(t->getPhone()));
-            pfEmail->setText(UiHelper::toQString(t->getEmail()));
+            pfName->setText(UiHelper::sang_qstring(t->getFullName()));
+            pfPhone->setText(UiHelper::sang_qstring(t->getPhone()));
+            pfEmail->setText(UiHelper::sang_qstring(t->getEmail()));
             pfGender->setCurrentText(t->getGender() == "Nu" ? "Nu" : "Nam");
-            pfDob->setText(UiHelper::toQString(t->getDateOfBirth()));
-            pfAddress->setText(UiHelper::toQString(t->getAddress()));
-            pfSubjects->setText(UiHelper::toQString(t->getSubjects()));
-            pfSchedule->setText(UiHelper::toQString(t->getSchedule()));
-            pfQualification->setText(UiHelper::toQString(t->getQualification()));
+            pfDob->setText(UiHelper::sang_qstring(t->getDateOfBirth()));
+            pfAddress->setText(UiHelper::sang_qstring(t->getAddress()));
+            pfSubjects->setText(UiHelper::sang_qstring(t->getSubjects()));
+            pfSchedule->setText(UiHelper::sang_qstring(t->getSchedule()));
+            pfQualification->setText(UiHelper::sang_qstring(t->getQualification()));
             pfExp->setText(QString::number(t->getExpYears()));
-            pfAchievements->setPlainText(UiHelper::toQString(t->getAchievements()));
+            pfAchievements->setPlainText(UiHelper::sang_qstring(t->getAchievements()));
         }
     } else if (isStudent) {
-        Student* s = service.findStudentById(id);
+        Student* s = service.tim_hoc_vien(id);
         if (s) {
             found = true;
-            pfName->setText(UiHelper::toQString(s->getFullName()));
-            pfPhone->setText(UiHelper::toQString(s->getPhone()));
-            pfEmail->setText(UiHelper::toQString(s->getEmail()));
+            pfName->setText(UiHelper::sang_qstring(s->getFullName()));
+            pfPhone->setText(UiHelper::sang_qstring(s->getPhone()));
+            pfEmail->setText(UiHelper::sang_qstring(s->getEmail()));
             pfGender->setCurrentText(s->getGender() == "Nu" ? "Nu" : "Nam");
-            pfDob->setText(UiHelper::toQString(s->getDateOfBirth()));
-            pfAddress->setText(UiHelper::toQString(s->getAddress()));
-            pfSubjects->setText(UiHelper::toQString(s->getSubjects()));
-            pfSchedule->setText(UiHelper::toQString(s->getSchedule()));
-            pfGrade->setText(UiHelper::toQString(s->getGrade()));
+            pfDob->setText(UiHelper::sang_qstring(s->getDateOfBirth()));
+            pfAddress->setText(UiHelper::sang_qstring(s->getAddress()));
+            pfSubjects->setText(UiHelper::sang_qstring(s->getSubjects()));
+            pfSchedule->setText(UiHelper::sang_qstring(s->getSchedule()));
+            pfGrade->setText(UiHelper::sang_qstring(s->getGrade()));
             pfBudget->setText(QString::number(s->getBudget(), 'f', 0));
         }
     }
@@ -811,7 +811,7 @@ void MainWindow::onSaveProfile() {
         p.qualification = pfQualification->text().trimmed().toStdString();
         p.achievements = pfAchievements->toPlainText().trimmed().toStdString();
         p.expYears = exp;
-        ok = service.updateTutorProfile(id, p, &error);
+        ok = service.sua_ho_so_gs(id, p, &error);
     } else if (m_currentRole == "Student") {
         bool budgetOk = true;
         double budget = 0.0;
@@ -832,23 +832,23 @@ void MainWindow::onSaveProfile() {
         p.schedule = pfSchedule->text().trimmed().toStdString();
         p.grade = pfGrade->text().trimmed().toStdString();
         p.budget = budget;
-        ok = service.updateStudentProfile(id, p, &error);
+        ok = service.sua_ho_so_hv(id, p, &error);
     } else {
         return;
     }
 
     if (!ok) {
-        QMessageBox::critical(this, "Loi", "Luu ho so that bai!\n" + UiHelper::toQString(error));
+        QMessageBox::critical(this, "Loi", "Luu ho so that bai!\n" + UiHelper::sang_qstring(error));
         return;
     }
 
     // dong bo ten / sdt / email sang tai khoan
-    if (m_auth && m_auth->getCurrentUser()) {
-        Account* acc = m_auth->getCurrentUser();
+    if (m_auth && m_auth->tai_khoan_hien_tai()) {
+        Account* acc = m_auth->tai_khoan_hien_tai();
         acc->setFullName(pfName->text().trimmed().toStdString());
         acc->setPhone(pfPhone->text().trimmed().toStdString());
         acc->setEmail(pfEmail->text().trimmed().toStdString());
-        m_auth->saveToFile();
+        m_auth->luu_file();
     }
     m_currentName = pfName->text().trimmed();
     refreshIdentity();
@@ -880,17 +880,17 @@ void MainWindow::populateActorCombos() {
     QSignalBlocker b2(tutorActorCombo);
 
     bookingStudentCombo->clear();
-    for (Student* st : service.getStudents()) {
-        bookingStudentCombo->addItem(UiHelper::nameWithId(st->getFullName(), st->getId()),
-                                     UiHelper::toQString(st->getId()));
+    for (Student* st : service.ds_hoc_vien()) {
+        bookingStudentCombo->addItem(UiHelper::ten_kem_ma(st->getFullName(), st->getId()),
+                                     UiHelper::sang_qstring(st->getId()));
     }
     int si = bookingStudentCombo->findData(prevStudent);
     if (si >= 0) bookingStudentCombo->setCurrentIndex(si);
 
     tutorActorCombo->clear();
-    for (Tutor* tu : service.getTutors()) {
-        tutorActorCombo->addItem(UiHelper::nameWithId(tu->getFullName(), tu->getId()),
-                                 UiHelper::toQString(tu->getId()));
+    for (Tutor* tu : service.ds_gia_su()) {
+        tutorActorCombo->addItem(UiHelper::ten_kem_ma(tu->getFullName(), tu->getId()),
+                                 UiHelper::sang_qstring(tu->getId()));
     }
     int ti = tutorActorCombo->findData(prevTutor);
     if (ti >= 0) tutorActorCombo->setCurrentIndex(ti);
@@ -910,20 +910,20 @@ void MainWindow::onAddStudent() {
         QMessageBox::warning(this, "Canh bao", "Vui long nhap Ho va Ten!");
         return;
     }
-    if (!Validator::isValidPhone(phone)) {
-        QMessageBox::warning(this, "Canh bao", UiHelper::toQString(Validator::getPhoneError(phone)));
+    if (!Validator::sdt_hop_le(phone)) {
+        QMessageBox::warning(this, "Canh bao", UiHelper::sang_qstring(Validator::loi_sdt(phone)));
         return;
     }
-    if (email.empty() || !Validator::isValidEmail(email)) {
-        QMessageBox::warning(this, "Canh bao", email.empty() ? "Vui long nhap Email!" : UiHelper::toQString(Validator::getEmailError(email)));
+    if (email.empty() || !Validator::email_hop_le(email)) {
+        QMessageBox::warning(this, "Canh bao", email.empty() ? "Vui long nhap Email!" : UiHelper::sang_qstring(Validator::loi_email(email)));
         return;
     }
 
     Student* st = new Student("", name, grade, phone, email, "", "Nam", "", subjects, "", budget);
-    if (service.addStudent(st)) {
-        stGeneratedIdLabel->setText(UiHelper::toQString(st->getId()));
+    if (service.them_hoc_vien(st)) {
+        stGeneratedIdLabel->setText(UiHelper::sang_qstring(st->getId()));
         QMessageBox::information(this, "Thanh cong",
-            QString("Them hoc vien thanh cong!\nMa tu dong sinh: %1").arg(UiHelper::toQString(st->getId())));
+            QString("Them hoc vien thanh cong!\nMa tu dong sinh: %1").arg(UiHelper::sang_qstring(st->getId())));
         stNameInput->clear(); stGradeInput->clear(); stPhoneInput->clear();
         stEmailInput->clear(); stSubjectsInput->clear(); stBudgetInput->clear();
         refreshAllTables();
@@ -944,20 +944,20 @@ void MainWindow::onAddTutor() {
         QMessageBox::warning(this, "Canh bao", "Vui long nhap Ho va Ten!");
         return;
     }
-    if (!Validator::isValidPhone(phone)) {
-        QMessageBox::warning(this, "Canh bao", UiHelper::toQString(Validator::getPhoneError(phone)));
+    if (!Validator::sdt_hop_le(phone)) {
+        QMessageBox::warning(this, "Canh bao", UiHelper::sang_qstring(Validator::loi_sdt(phone)));
         return;
     }
-    if (email.empty() || !Validator::isValidEmail(email)) {
-        QMessageBox::warning(this, "Canh bao", email.empty() ? "Vui long nhap Email!" : UiHelper::toQString(Validator::getEmailError(email)));
+    if (email.empty() || !Validator::email_hop_le(email)) {
+        QMessageBox::warning(this, "Canh bao", email.empty() ? "Vui long nhap Email!" : UiHelper::sang_qstring(Validator::loi_email(email)));
         return;
     }
 
     Tutor* tu = new Tutor("", name, phone, email, "", "Nam", "", subjects, "", exp, 0.0, "");
-    if (service.addTutor(tu)) {
-        tuGeneratedIdLabel->setText(UiHelper::toQString(tu->getId()));
+    if (service.them_gia_su(tu)) {
+        tuGeneratedIdLabel->setText(UiHelper::sang_qstring(tu->getId()));
         QMessageBox::information(this, "Thanh cong",
-            QString("Them gia su thanh cong!\nMa tu dong sinh: %1").arg(UiHelper::toQString(tu->getId())));
+            QString("Them gia su thanh cong!\nMa tu dong sinh: %1").arg(UiHelper::sang_qstring(tu->getId())));
         tuNameInput->clear(); tuPhoneInput->clear(); tuEmailInput->clear();
         tuSubjectsInput->clear(); tuExpInput->clear();
         refreshAllTables();
@@ -973,19 +973,19 @@ void MainWindow::onSearchAvailableClasses() {
 
     int row = 0;
 
-    for (Class* c : service.getClasses()) {
+    for (Class* c : service.ds_lop()) {
         if (c->getStatus() == "AVAILABLE") {
-            QString cSub = UiHelper::toQString(c->getSubject()).toLower();
+            QString cSub = UiHelper::sang_qstring(c->getSubject()).toLower();
             if (subKey.isEmpty() || cSub.contains(subKey)) {
                 availableClassesTable->insertRow(row);
-                availableClassesTable->setItem(row, 0, UiHelper::tableCell(UiHelper::toQString(c->getClassId())));
-                availableClassesTable->setItem(row, 1, UiHelper::tableCell(UiHelper::toQString(c->getSubject())));
-                availableClassesTable->setItem(row, 2, UiHelper::tableCell(UiHelper::scheduleText(c->getSchedule())));
-                availableClassesTable->setItem(row, 3, UiHelper::tableCell(QString::number(c->getTuitionFee())));
-                availableClassesTable->setItem(row, 4, UiHelper::tableCell(UiHelper::toQString(c->getTutorId())));
-                Tutor* t = service.findTutorById(c->getTutorId());
-                availableClassesTable->setItem(row, 5, UiHelper::tutorLinkCell(t ? UiHelper::toQString(t->getFullName()) : "N/A", c->getTutorId()));
-                availableClassesTable->setItem(row, 6, UiHelper::tableCell("AVAILABLE"));
+                availableClassesTable->setItem(row, 0, UiHelper::o_bang(UiHelper::sang_qstring(c->getClassId())));
+                availableClassesTable->setItem(row, 1, UiHelper::o_bang(UiHelper::sang_qstring(c->getSubject())));
+                availableClassesTable->setItem(row, 2, UiHelper::o_bang(UiHelper::chu_lich(c->getSchedule())));
+                availableClassesTable->setItem(row, 3, UiHelper::o_bang(QString::number(c->getTuitionFee())));
+                availableClassesTable->setItem(row, 4, UiHelper::o_bang(UiHelper::sang_qstring(c->getTutorId())));
+                Tutor* t = service.tim_gia_su(c->getTutorId());
+                availableClassesTable->setItem(row, 5, UiHelper::o_link_gia_su(t ? UiHelper::sang_qstring(t->getFullName()) : "N/A", c->getTutorId()));
+                availableClassesTable->setItem(row, 6, UiHelper::o_bang("AVAILABLE"));
                 row++;
             }
         }
@@ -1027,14 +1027,14 @@ void MainWindow::onBookClass() {
     }
 
     string error;
-    if (service.studentBookClass(studentId, classId, &error)) {
+    if (service.dang_ky_lop(studentId, classId, &error)) {
         QMessageBox::information(this, "Thanh cong",
             QString("Dang ky ca hoc %1 thanh cong!\nCa hoc da chuyen sang PENDING va an khoi hoc vien khac.")
-            .arg(UiHelper::toQString(classId)));
+            .arg(UiHelper::sang_qstring(classId)));
         selectedClassIdInput->clear();
         refreshAllTables();
     } else {
-        QMessageBox::critical(this, "Loi", "Dang ky that bai!\n" + UiHelper::toQString(error));
+        QMessageBox::critical(this, "Loi", "Dang ky that bai!\n" + UiHelper::sang_qstring(error));
         refreshAllTables();  // ca co the vua bi nguoi khac chon
     }
 }
@@ -1067,16 +1067,16 @@ void MainWindow::onOpenClass() {
     }
 
     string newClassId, error;
-    if (service.tutorOpenClass(tutorId, subject, schedule.toString(), fee, "", "", &newClassId, &error)) {
+    if (service.mo_lop(tutorId, subject, schedule.chuoi_luu(), fee, "", "", &newClassId, &error)) {
         QMessageBox::information(this, "Thanh cong",
             QString("Mo ca day thanh cong!\nMa lop tu dong sinh: %1\nLich: %2")
-            .arg(UiHelper::toQString(newClassId), UiHelper::toQString(schedule.toDisplayString())));
+            .arg(UiHelper::sang_qstring(newClassId), UiHelper::sang_qstring(schedule.chuoi_hien_thi())));
         openSubjectInput->clear();
         openFeeInput->clear();
         schedulePicker->reset();
         refreshAllTables();
     } else {
-        QMessageBox::critical(this, "Loi", "Mo ca day that bai!\n" + UiHelper::toQString(error));
+        QMessageBox::critical(this, "Loi", "Mo ca day that bai!\n" + UiHelper::sang_qstring(error));
     }
 }
 
@@ -1089,9 +1089,9 @@ void MainWindow::onApproveRequest() {
 
     string classId = pendingRequestsTable->item(row, 0)->text().toStdString();
     string tutorId = actingTutorId().toStdString();
-    if (service.tutorApproveClass(tutorId, classId)) {
+    if (service.duyet_lop(tutorId, classId)) {
         QMessageBox::information(this, "Thanh cong",
-            QString("Da phe duyet lop %1 va tao hop dong!").arg(UiHelper::toQString(classId)));
+            QString("Da phe duyet lop %1 va tao hop dong!").arg(UiHelper::sang_qstring(classId)));
         refreshAllTables();
     } else {
         QMessageBox::critical(this, "Loi", "Phe duyet that bai!");
@@ -1107,9 +1107,9 @@ void MainWindow::onRejectRequest() {
 
     string classId = pendingRequestsTable->item(row, 0)->text().toStdString();
     string tutorId = actingTutorId().toStdString();
-    if (service.tutorRejectClass(tutorId, classId)) {
+    if (service.tu_choi_lop(tutorId, classId)) {
         QMessageBox::information(this, "Thong bao",
-            QString("Da tu choi yeu cau lop %1. Khung gio da mo lai.").arg(UiHelper::toQString(classId)));
+            QString("Da tu choi yeu cau lop %1. Khung gio da mo lai.").arg(UiHelper::sang_qstring(classId)));
         refreshAllTables();
     } else {
         QMessageBox::critical(this, "Loi", "Tu choi that bai!");
@@ -1141,11 +1141,11 @@ void MainWindow::onDeleteClass() {
     if (!confirm("Xoa lop", "Xoa lop trong " + classId + "?\nThao tac khong the hoan tac.")) return;
 
     string error;
-    if (service.tutorDeleteClass(m_currentPersonId.toStdString(), classId.toStdString(), &error)) {
+    if (service.xoa_lop_trong(m_currentPersonId.toStdString(), classId.toStdString(), &error)) {
         QMessageBox::information(this, "Thanh cong", "Da xoa lop " + classId + ".");
         refreshAllTables();
     } else {
-        QMessageBox::critical(this, "Loi", UiHelper::toQString(error));
+        QMessageBox::critical(this, "Loi", UiHelper::sang_qstring(error));
     }
 }
 
@@ -1155,11 +1155,11 @@ void MainWindow::onCancelBooking() {
     if (!confirm("Rut dang ky", "Rut dang ky lop " + classId + "?")) return;
 
     string error;
-    if (service.studentCancelBooking(m_currentPersonId.toStdString(), classId.toStdString(), &error)) {
+    if (service.rut_dang_ky(m_currentPersonId.toStdString(), classId.toStdString(), &error)) {
         QMessageBox::information(this, "Thanh cong", "Da rut dang ky lop " + classId + ".");
         refreshAllTables();
     } else {
-        QMessageBox::critical(this, "Loi", UiHelper::toQString(error));
+        QMessageBox::critical(this, "Loi", UiHelper::sang_qstring(error));
     }
 }
 
@@ -1187,13 +1187,13 @@ void MainWindow::onRequestEndContract() {
     if (!ok) return;
 
     string error;
-    if (service.requestEndContract(m_currentPersonId.toStdString(), contractId.toStdString(),
+    if (service.yeu_cau_ket_thuc(m_currentPersonId.toStdString(), contractId.toStdString(),
                                    reason.toStdString(), &error)) {
         QMessageBox::information(this, "Da gui yeu cau",
             "Da gui yeu cau ket thuc " + contractId + ". Cho ben con lai xac nhan.");
         refreshAllTables();
     } else {
-        QMessageBox::critical(this, "Loi", UiHelper::toQString(error));
+        QMessageBox::critical(this, "Loi", UiHelper::sang_qstring(error));
     }
 }
 
@@ -1204,11 +1204,11 @@ void MainWindow::onConfirmEndContract() {
     if (!confirm("Dong y ket thuc", "Ket thuc hop dong " + contractId + "?\nLy do: " + reason)) return;
 
     string error;
-    if (service.confirmEndContract(m_currentPersonId.toStdString(), contractId.toStdString(), &error)) {
+    if (service.dong_y_ket_thuc(m_currentPersonId.toStdString(), contractId.toStdString(), &error)) {
         QMessageBox::information(this, "Thanh cong", "Hop dong " + contractId + " da ket thuc.");
         refreshAllTables();
     } else {
-        QMessageBox::critical(this, "Loi", UiHelper::toQString(error));
+        QMessageBox::critical(this, "Loi", UiHelper::sang_qstring(error));
     }
 }
 
@@ -1217,11 +1217,11 @@ void MainWindow::onCancelEndRequest() {
     if (contractId.isEmpty()) return;
 
     string error;
-    if (service.cancelEndRequest(m_currentPersonId.toStdString(), contractId.toStdString(), &error)) {
+    if (service.huy_yeu_cau_ket_thuc(m_currentPersonId.toStdString(), contractId.toStdString(), &error)) {
         QMessageBox::information(this, "Thong bao", "Hop dong " + contractId + " tiep tuc hieu luc.");
         refreshAllTables();
     } else {
-        QMessageBox::critical(this, "Loi", UiHelper::toQString(error));
+        QMessageBox::critical(this, "Loi", UiHelper::sang_qstring(error));
     }
 }
 
@@ -1235,11 +1235,11 @@ void MainWindow::onAdminEndContract() {
                                          " ma khong can 2 ben xac nhan?")) return;
 
     string error;
-    if (service.adminEndContract(contractId.toStdString(), reason.toStdString(), &error)) {
+    if (service.admin_ket_thuc(contractId.toStdString(), reason.toStdString(), &error)) {
         QMessageBox::information(this, "Thanh cong", "Hop dong " + contractId + " da ket thuc.");
         refreshAllTables();
     } else {
-        QMessageBox::critical(this, "Loi", UiHelper::toQString(error));
+        QMessageBox::critical(this, "Loi", UiHelper::sang_qstring(error));
     }
 }
 
@@ -1260,16 +1260,16 @@ void MainWindow::deletePerson(bool isTutor) {
 
     AdminService admin(*m_auth, service);
     string pid = id.toStdString();
-    DeleteImpact impact = isTutor ? admin.previewDeleteTutor(pid) : admin.previewDeleteStudent(pid);
+    DeleteImpact impact = isTutor ? admin.xem_truoc_xoa_gia_su(pid) : admin.xem_truoc_xoa_hoc_vien(pid);
     if (!impact.allowed) {
-        QMessageBox::warning(this, "Khong the xoa", UiHelper::toQString(impact.reason));
+        QMessageBox::warning(this, "Khong the xoa", UiHelper::sang_qstring(impact.reason));
         return;
     }
 
     // liet ke hau qua de admin xem truoc
     auto join = [](const vector<string>& v) {
         QStringList list;
-        for (const string& s : v) list << UiHelper::toQString(s);
+        for (const string& s : v) list << UiHelper::sang_qstring(s);
         return list.join(", ");
     };
     QString text = "Xoa " + who + " " + id + " (" + selectedCell(table, 1) + ")?\n";
@@ -1281,12 +1281,12 @@ void MainWindow::deletePerson(bool isTutor) {
     if (!confirm("Xoa " + who, text)) return;
 
     string error;
-    bool ok = isTutor ? admin.deleteTutor(pid, &error) : admin.deleteStudent(pid, &error);
+    bool ok = isTutor ? admin.xoa_gia_su(pid, &error) : admin.xoa_hoc_vien(pid, &error);
     if (ok) {
         QMessageBox::information(this, "Thanh cong", "Da xoa " + who + " " + id + ".");
         refreshAllTables();
     } else {
-        QMessageBox::critical(this, "Loi", UiHelper::toQString(error));
+        QMessageBox::critical(this, "Loi", UiHelper::sang_qstring(error));
         refreshAllTables();
     }
 }
@@ -1300,17 +1300,17 @@ void MainWindow::refreshPendingRequests() {
     if (tutorId.empty()) return;
 
     int row = 0;
-    for (Class* c : service.getClasses()) {
+    for (Class* c : service.ds_lop()) {
         if (c->getTutorId() == tutorId && c->getStatus() == "PENDING") {
-            Student* s = service.findStudentById(c->getStudentId());
+            Student* s = service.tim_hoc_vien(c->getStudentId());
             pendingRequestsTable->insertRow(row);
-            pendingRequestsTable->setItem(row, 0, UiHelper::tableCell(UiHelper::toQString(c->getClassId())));
-            pendingRequestsTable->setItem(row, 1, UiHelper::tableCell(UiHelper::toQString(c->getSubject())));
-            pendingRequestsTable->setItem(row, 2, UiHelper::tableCell(UiHelper::scheduleText(c->getSchedule())));
-            pendingRequestsTable->setItem(row, 3, UiHelper::tableCell(UiHelper::toQString(c->getStudentId())));
-            pendingRequestsTable->setItem(row, 4, UiHelper::tableCell(s ? UiHelper::toQString(s->getFullName()) : "N/A"));
-            pendingRequestsTable->setItem(row, 5, UiHelper::tableCell(s ? UiHelper::toQString(s->getPhone()) : "N/A"));
-            pendingRequestsTable->setItem(row, 6, UiHelper::tableCell("PENDING"));
+            pendingRequestsTable->setItem(row, 0, UiHelper::o_bang(UiHelper::sang_qstring(c->getClassId())));
+            pendingRequestsTable->setItem(row, 1, UiHelper::o_bang(UiHelper::sang_qstring(c->getSubject())));
+            pendingRequestsTable->setItem(row, 2, UiHelper::o_bang(UiHelper::chu_lich(c->getSchedule())));
+            pendingRequestsTable->setItem(row, 3, UiHelper::o_bang(UiHelper::sang_qstring(c->getStudentId())));
+            pendingRequestsTable->setItem(row, 4, UiHelper::o_bang(s ? UiHelper::sang_qstring(s->getFullName()) : "N/A"));
+            pendingRequestsTable->setItem(row, 5, UiHelper::o_bang(s ? UiHelper::sang_qstring(s->getPhone()) : "N/A"));
+            pendingRequestsTable->setItem(row, 6, UiHelper::o_bang("PENDING"));
             row++;
         }
     }
@@ -1336,32 +1336,32 @@ void MainWindow::refreshMyClasses() {
 
     string me = m_currentPersonId.toStdString();
     int row = 0;
-    for (Class* c : service.getClasses()) {
+    for (Class* c : service.ds_lop()) {
         bool match = isAdmin ||
             (isStudent && c->getStudentId() == me && c->getStatus() != "AVAILABLE") ||
             (isTutor   && c->getTutorId()   == me);
 
         if (match) {
             myClassesTable->insertRow(row);
-            myClassesTable->setItem(row, 0, UiHelper::tableCell(UiHelper::toQString(c->getClassId())));
-            myClassesTable->setItem(row, 1, UiHelper::tableCell(UiHelper::toQString(c->getSubject())));
-            myClassesTable->setItem(row, 2, UiHelper::tableCell(UiHelper::scheduleText(c->getSchedule())));
-            myClassesTable->setItem(row, 3, UiHelper::tableCell(QString::number(c->getTuitionFee())));
+            myClassesTable->setItem(row, 0, UiHelper::o_bang(UiHelper::sang_qstring(c->getClassId())));
+            myClassesTable->setItem(row, 1, UiHelper::o_bang(UiHelper::sang_qstring(c->getSubject())));
+            myClassesTable->setItem(row, 2, UiHelper::o_bang(UiHelper::chu_lich(c->getSchedule())));
+            myClassesTable->setItem(row, 3, UiHelper::o_bang(QString::number(c->getTuitionFee())));
 
-            Tutor* t = service.findTutorById(c->getTutorId());
-            Student* s = service.findStudentById(c->getStudentId());
-            QString tutorName   = t ? UiHelper::toQString(t->getFullName()) : UiHelper::toQString(c->getTutorId()) + " (da xoa)";
+            Tutor* t = service.tim_gia_su(c->getTutorId());
+            Student* s = service.tim_hoc_vien(c->getStudentId());
+            QString tutorName   = t ? UiHelper::sang_qstring(t->getFullName()) : UiHelper::sang_qstring(c->getTutorId()) + " (da xoa)";
             QString studentName = c->getStudentId().empty() ? QString("(chua co hoc vien)")
-                                : (s ? UiHelper::toQString(s->getFullName()) : UiHelper::toQString(c->getStudentId()) + " (da xoa)");
+                                : (s ? UiHelper::sang_qstring(s->getFullName()) : UiHelper::sang_qstring(c->getStudentId()) + " (da xoa)");
 
             QString partner;
             if (isStudent)    partner = tutorName;
             else if (isTutor) partner = studentName;
             else              partner = studentName + "  -  " + tutorName;
             // bam ten gia su de xem ho so
-            myClassesTable->setItem(row, 4, isStudent ? UiHelper::tutorLinkCell(partner, c->getTutorId()) : UiHelper::tableCell(partner));
-            myClassesTable->setItem(row, 5, UiHelper::tableCell(UiHelper::toQString(c->getStatus())));
-            myClassesTable->setItem(row, 6, UiHelper::tableCell(UiHelper::toQString(c->getContractId())));
+            myClassesTable->setItem(row, 4, isStudent ? UiHelper::o_link_gia_su(partner, c->getTutorId()) : UiHelper::o_bang(partner));
+            myClassesTable->setItem(row, 5, UiHelper::o_bang(UiHelper::sang_qstring(c->getStatus())));
+            myClassesTable->setItem(row, 6, UiHelper::o_bang(UiHelper::sang_qstring(c->getContractId())));
             row++;
         }
     }
@@ -1382,7 +1382,7 @@ void MainWindow::refreshContracts() {
 
     string me = m_currentPersonId.toStdString();
     int row = 0;
-    for (Contract* ct : service.getContracts()) {
+    for (Contract* ct : service.ds_hop_dong()) {
         bool match = isAdmin ||
             (isStudent && ct->getStudentId() == me) ||
             (isTutor   && ct->getTutorId()   == me);
@@ -1390,18 +1390,18 @@ void MainWindow::refreshContracts() {
         if (match) {
             QString period = (ct->getStartDate().empty() && ct->getEndDate().empty())
                 ? QString("-")
-                : UiHelper::toQString(ct->getStartDate()) + " -> " + UiHelper::toQString(ct->getEndDate());
+                : UiHelper::sang_qstring(ct->getStartDate()) + " -> " + UiHelper::sang_qstring(ct->getEndDate());
             contractsTableWidget->insertRow(row);
-            contractsTableWidget->setItem(row, 0, UiHelper::tableCell(UiHelper::toQString(ct->getContractId())));
-            contractsTableWidget->setItem(row, 1, UiHelper::tableCell(UiHelper::toQString(ct->getStudentId())));
-            contractsTableWidget->setItem(row, 2, UiHelper::tableCell(UiHelper::toQString(ct->getTutorId())));
-            contractsTableWidget->setItem(row, 3, UiHelper::tableCell(UiHelper::toQString(ct->getSubjects())));
-            contractsTableWidget->setItem(row, 4, UiHelper::tableCell(period));
-            contractsTableWidget->setItem(row, 5, UiHelper::tableCell(UiHelper::toQString(ct->getStatus())));
-            contractsTableWidget->setItem(row, 6, UiHelper::tableCell(UiHelper::toQString(ct->getRequestedBy())));
-            QString reason = UiHelper::toQString(ct->getEndReason());
-            if (!ct->getEndedOn().empty()) reason += " (" + UiHelper::toQString(ct->getEndedOn()) + ")";
-            contractsTableWidget->setItem(row, 7, UiHelper::tableCell(reason));
+            contractsTableWidget->setItem(row, 0, UiHelper::o_bang(UiHelper::sang_qstring(ct->getContractId())));
+            contractsTableWidget->setItem(row, 1, UiHelper::o_bang(UiHelper::sang_qstring(ct->getStudentId())));
+            contractsTableWidget->setItem(row, 2, UiHelper::o_bang(UiHelper::sang_qstring(ct->getTutorId())));
+            contractsTableWidget->setItem(row, 3, UiHelper::o_bang(UiHelper::sang_qstring(ct->getSubjects())));
+            contractsTableWidget->setItem(row, 4, UiHelper::o_bang(period));
+            contractsTableWidget->setItem(row, 5, UiHelper::o_bang(UiHelper::sang_qstring(ct->getStatus())));
+            contractsTableWidget->setItem(row, 6, UiHelper::o_bang(UiHelper::sang_qstring(ct->getRequestedBy())));
+            QString reason = UiHelper::sang_qstring(ct->getEndReason());
+            if (!ct->getEndedOn().empty()) reason += " (" + UiHelper::sang_qstring(ct->getEndedOn()) + ")";
+            contractsTableWidget->setItem(row, 7, UiHelper::o_bang(reason));
 
             // to mau dong cho xac nhan de ben kia de thay
             if (ct->getStatus() == "EndRequested") {
@@ -1420,37 +1420,37 @@ void MainWindow::refreshAllTables() {
     // bang hoc vien
     studentTableWidget->setRowCount(0);
     int sRow = 0;
-    for (Student* s : service.getStudents()) {
+    for (Student* s : service.ds_hoc_vien()) {
         studentTableWidget->insertRow(sRow);
-        studentTableWidget->setItem(sRow, 0, UiHelper::tableCell(UiHelper::toQString(s->getId())));
-        studentTableWidget->setItem(sRow, 1, UiHelper::tableCell(UiHelper::toQString(s->getFullName())));
-        studentTableWidget->setItem(sRow, 2, UiHelper::tableCell(UiHelper::toQString(s->getGender())));
-        studentTableWidget->setItem(sRow, 3, UiHelper::tableCell(UiHelper::toQString(s->getDateOfBirth())));
-        studentTableWidget->setItem(sRow, 4, UiHelper::tableCell(UiHelper::toQString(s->getGrade())));
-        studentTableWidget->setItem(sRow, 5, UiHelper::tableCell(UiHelper::toQString(s->getPhone())));
-        studentTableWidget->setItem(sRow, 6, UiHelper::tableCell(UiHelper::toQString(s->getEmail())));
-        studentTableWidget->setItem(sRow, 7, UiHelper::tableCell(UiHelper::toQString(s->getAddress())));
-        studentTableWidget->setItem(sRow, 8, UiHelper::tableCell(UiHelper::toQString(s->getSubjects())));
-        studentTableWidget->setItem(sRow, 9, UiHelper::tableCell(QString::number(s->getBudget(), 'f', 0)));
+        studentTableWidget->setItem(sRow, 0, UiHelper::o_bang(UiHelper::sang_qstring(s->getId())));
+        studentTableWidget->setItem(sRow, 1, UiHelper::o_bang(UiHelper::sang_qstring(s->getFullName())));
+        studentTableWidget->setItem(sRow, 2, UiHelper::o_bang(UiHelper::sang_qstring(s->getGender())));
+        studentTableWidget->setItem(sRow, 3, UiHelper::o_bang(UiHelper::sang_qstring(s->getDateOfBirth())));
+        studentTableWidget->setItem(sRow, 4, UiHelper::o_bang(UiHelper::sang_qstring(s->getGrade())));
+        studentTableWidget->setItem(sRow, 5, UiHelper::o_bang(UiHelper::sang_qstring(s->getPhone())));
+        studentTableWidget->setItem(sRow, 6, UiHelper::o_bang(UiHelper::sang_qstring(s->getEmail())));
+        studentTableWidget->setItem(sRow, 7, UiHelper::o_bang(UiHelper::sang_qstring(s->getAddress())));
+        studentTableWidget->setItem(sRow, 8, UiHelper::o_bang(UiHelper::sang_qstring(s->getSubjects())));
+        studentTableWidget->setItem(sRow, 9, UiHelper::o_bang(QString::number(s->getBudget(), 'f', 0)));
         sRow++;
     }
 
     // bang gia su, hoc phi dat theo tung ca nen khong co cot
     tutorTableWidget->setRowCount(0);
     int tRow = 0;
-    for (Tutor* t : service.getTutors()) {
+    for (Tutor* t : service.ds_gia_su()) {
         tutorTableWidget->insertRow(tRow);
-        tutorTableWidget->setItem(tRow, 0, UiHelper::tableCell(UiHelper::toQString(t->getId())));
-        tutorTableWidget->setItem(tRow, 1, UiHelper::tableCell(UiHelper::toQString(t->getFullName())));
-        tutorTableWidget->setItem(tRow, 2, UiHelper::tableCell(UiHelper::toQString(t->getGender())));
-        tutorTableWidget->setItem(tRow, 3, UiHelper::tableCell(UiHelper::toQString(t->getDateOfBirth())));
-        tutorTableWidget->setItem(tRow, 4, UiHelper::tableCell(UiHelper::toQString(t->getPhone())));
-        tutorTableWidget->setItem(tRow, 5, UiHelper::tableCell(UiHelper::toQString(t->getEmail())));
-        tutorTableWidget->setItem(tRow, 6, UiHelper::tableCell(UiHelper::toQString(t->getAddress())));
-        tutorTableWidget->setItem(tRow, 7, UiHelper::tableCell(UiHelper::toQString(t->getSubjects())));
-        tutorTableWidget->setItem(tRow, 8, UiHelper::tableCell(UiHelper::toQString(t->getQualification())));
-        tutorTableWidget->setItem(tRow, 9, UiHelper::tableCell(QString::number(t->getExpYears()) + " nam"));
-        tutorTableWidget->setItem(tRow, 10, UiHelper::tableCell(UiHelper::toQString(t->getAchievements()).replace('\n', ' ')));
+        tutorTableWidget->setItem(tRow, 0, UiHelper::o_bang(UiHelper::sang_qstring(t->getId())));
+        tutorTableWidget->setItem(tRow, 1, UiHelper::o_bang(UiHelper::sang_qstring(t->getFullName())));
+        tutorTableWidget->setItem(tRow, 2, UiHelper::o_bang(UiHelper::sang_qstring(t->getGender())));
+        tutorTableWidget->setItem(tRow, 3, UiHelper::o_bang(UiHelper::sang_qstring(t->getDateOfBirth())));
+        tutorTableWidget->setItem(tRow, 4, UiHelper::o_bang(UiHelper::sang_qstring(t->getPhone())));
+        tutorTableWidget->setItem(tRow, 5, UiHelper::o_bang(UiHelper::sang_qstring(t->getEmail())));
+        tutorTableWidget->setItem(tRow, 6, UiHelper::o_bang(UiHelper::sang_qstring(t->getAddress())));
+        tutorTableWidget->setItem(tRow, 7, UiHelper::o_bang(UiHelper::sang_qstring(t->getSubjects())));
+        tutorTableWidget->setItem(tRow, 8, UiHelper::o_bang(UiHelper::sang_qstring(t->getQualification())));
+        tutorTableWidget->setItem(tRow, 9, UiHelper::o_bang(QString::number(t->getExpYears()) + " nam"));
+        tutorTableWidget->setItem(tRow, 10, UiHelper::o_bang(UiHelper::sang_qstring(t->getAchievements()).replace('\n', ' ')));
         tRow++;
     }
 

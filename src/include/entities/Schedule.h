@@ -5,8 +5,7 @@
 #include <vector>
 using namespace std;
 
-// 1 khung gio: nhieu thu dung chung 1 cap gio
-// dayMask: bit0 = T2 ... bit5 = T7, bit6 = CN
+// khung gio
 struct ScheduleSlot {
     unsigned dayMask;
     int startMin; 
@@ -23,31 +22,27 @@ public:
     static constexpr int STEP_MINUTES = 15;
 
     // ngay / gio
-    static string dayCode(int day);
-    static string dayLongName(int day);
-    static int dayFromCode(const string& code);  // -1 neu sai
-    static string formatTime(int minutes);
-    static bool parseTime(const string& text, int& minutes);  // phut phai chia het cho 15
+    static string ma_thu(int day);
+    static int thu_tu_ma(const string& code); 
+    static string gio_thanh_chuoi(int minutes);
+    static bool doc_gio(const string& text, int& minutes);  // phut phai chia het cho 15
 
     // thao tac
-    // them 1 khung, false neu chua chon thu, gio sai,
-    // bat dau >= ket thuc hoac trung khung da co
-    bool addSlot(unsigned dayMask, int startMin, int endMin, string* err = nullptr);
-    bool removeSlot(int index);
-    void clear();
+    bool them_khung(unsigned dayMask, int startMin, int endMin, string* err = nullptr);
+    bool xoa_khung(int index);
+    void xoa_het();
 
-    int size() const;
-    bool empty() const;
-    const ScheduleSlot& slot(int index) const;
+    int so_khung() const;
+    bool rong() const;
+    const ScheduleSlot& lay_khung(int index) const;
 
     // trung lich: chung 1 thu va gio giao nhau
-    bool overlaps(const Schedule& other) const;
+    bool trung_lich(const Schedule& other) const;
 
-    // doi chuoi
-    string toString() const;  // dang luu
-    string toDisplayString() const;  // dang hien thi
+    string chuoi_luu() const;  
+    string chuoi_hien_thi() const;  
 
-    static bool parse(const string& text, Schedule& out, string* err = nullptr);
+    static bool doc_lich(const string& text, Schedule& out, string* err = nullptr);
 };
 
 #endif

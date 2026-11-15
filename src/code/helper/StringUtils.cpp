@@ -18,19 +18,19 @@ string StringUtils::toLower(string s) {
     return s;
 }
 
-bool StringUtils::containsIgnoreCase(const string& str, const string& sub) {
+bool StringUtils::co_chua(const string& str, const string& sub) {
     if (sub.empty()) return true;
     return toLower(str).find(toLower(sub)) != string::npos;
 }
 
-bool StringUtils::hasWhitespace(const string& s) {
+bool StringUtils::co_khoang_trang(const string& s) {
     for (char c : s) {
         if (isspace((unsigned char)c)) return true;
     }
     return false;
 }
 
-bool StringUtils::containsAny(const string& s, const string& chars) {
+bool StringUtils::co_ky_tu(const string& s, const string& chars) {
     return s.find_first_of(chars) != string::npos;
 }
 
@@ -42,6 +42,6 @@ double StringUtils::toDouble(const string& s, double fallback) {
     try { return stod(s); } catch (...) { return fallback; }
 }
 
-void StringUtils::assign(string* out, const string& value) {
+void StringUtils::gan(string* out, const string& value) {
     if (out != nullptr) *out = value;
 }

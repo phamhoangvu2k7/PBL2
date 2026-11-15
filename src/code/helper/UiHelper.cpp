@@ -3,27 +3,27 @@
 #include <QColor>
 #include <QFont>
 
-QString UiHelper::toQString(const std::string& s) {
+QString UiHelper::sang_qstring(const std::string& s) {
     return QString::fromStdString(s);
 }
 
-QString UiHelper::scheduleText(const std::string& raw) {
+QString UiHelper::chu_lich(const std::string& raw) {
     Schedule s;
-    if (Schedule::parse(raw, s, nullptr)) return toQString(s.toDisplayString());
-    return toQString(raw);
+    if (Schedule::doc_lich(raw, s, nullptr)) return sang_qstring(s.chuoi_hien_thi());
+    return sang_qstring(raw);
 }
 
-QString UiHelper::nameWithId(const std::string& name, const std::string& id) {
-    return name.empty() ? toQString(id) : toQString(name) + " (" + toQString(id) + ")";
+QString UiHelper::ten_kem_ma(const std::string& name, const std::string& id) {
+    return name.empty() ? sang_qstring(id) : sang_qstring(name) + " (" + sang_qstring(id) + ")";
 }
 
-QTableWidgetItem* UiHelper::tableCell(const QString& text) {
+QTableWidgetItem* UiHelper::o_bang(const QString& text) {
     return new QTableWidgetItem(text);
 }
 
-QTableWidgetItem* UiHelper::tutorLinkCell(const QString& text, const std::string& tutorId) {
+QTableWidgetItem* UiHelper::o_link_gia_su(const QString& text, const std::string& tutorId) {
     QTableWidgetItem* item = new QTableWidgetItem(text);
-    item->setData(Qt::UserRole, toQString(tutorId));
+    item->setData(Qt::UserRole, sang_qstring(tutorId));
     item->setForeground(QColor("#1d4ed8"));
     QFont f = item->font();
     f.setUnderline(true);

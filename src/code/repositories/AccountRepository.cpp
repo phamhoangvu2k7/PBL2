@@ -14,8 +14,8 @@ Account* AccountRepository::fromRecord(const vector<string>& r) const {
     string role = StringUtils::trim(r[4]);
     if (role != "Student" && role != "Tutor" && role != "Admin") return nullptr;
 
-    IdGenerator::syncFromExistingId(r[0]);
-    IdGenerator::syncFromExistingId(r[3]);
+    IdGenerator::dong_bo_ma(r[0]);
+    IdGenerator::dong_bo_ma(r[3]);
     return new Account(r[0], r[1], r[2], r[3], role,
                        r.size() > 5 ? r[5] : "", r.size() > 6 ? r[6] : "", r.size() > 7 ? r[7] : "");
 }
