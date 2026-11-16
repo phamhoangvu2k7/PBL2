@@ -127,8 +127,6 @@ string AuthService::ten_hien_tai() const {
     return currentUser ? currentUser->getDisplayName() : "";
 }
 
-bool AuthService::la_hoc_vien() const { return currentUser && currentUser->getRole() == "Student"; }
-bool AuthService::la_gia_su()   const { return currentUser && currentUser->getRole() == "Tutor"; }
 bool AuthService::la_admin()   const { return currentUser && currentUser->getRole() == "Admin"; }
 
 bool AuthService::username_ton_tai(const string& username) const {

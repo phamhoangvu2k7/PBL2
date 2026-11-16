@@ -17,7 +17,7 @@ QTableWidgetItem* UiHelper::o_bang(const QString& text) {
 QTableWidgetItem* UiHelper::o_link_gia_su(const QString& text, const std::string& tutorId) {
     QTableWidgetItem* item = new QTableWidgetItem(text);
     item->setData(Qt::UserRole, sang_qstring(tutorId));
-    item->setForeground(QColor("#1d4ed8"));
+    item->setForeground(QColor("#1e2b4a"));
     QFont f = item->font();
     f.setUnderline(true);
     item->setFont(f);

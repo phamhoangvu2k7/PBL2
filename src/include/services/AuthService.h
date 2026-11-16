@@ -32,8 +32,6 @@ public:
     string ma_nguoi_hien_tai() const;
     string ten_hien_tai() const;
 
-    bool la_hoc_vien() const;
-    bool la_gia_su() const;
     bool la_admin() const;
 
     bool username_ton_tai(const string& username) const;

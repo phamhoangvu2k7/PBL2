@@ -28,9 +28,6 @@ public:
     // ve 1 khung mac dinh
     void reset();
 
-signals:
-    void scheduleChanged();
-
 private:
     struct SlotRow {
         QFrame* frame;
