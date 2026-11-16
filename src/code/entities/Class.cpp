@@ -4,7 +4,7 @@ Class::Class() : status("Pending"), tuitionFee(0.0) {}
 
 Class::Class(const string& classId, const string& contractId,
              const string& studentId, const string& tutorId,
-             const string& subject, const string& schedule,
+             const string& subject, const Schedule& schedule,
              const string& startDate, const string& endDate,
              const string& status, double tuitionFee)
     : classId(classId),
@@ -23,7 +23,7 @@ string Class::getContractId() const { return contractId; }
 string Class::getStudentId() const { return studentId; }
 string Class::getTutorId() const { return tutorId; }
 string Class::getSubject() const { return subject; }
-string Class::getSchedule() const { return schedule; }
+const Schedule& Class::getSchedule() const { return schedule; }
 string Class::getStartDate() const { return startDate; }
 string Class::getEndDate() const { return endDate; }
 string Class::getStatus() const { return status; }
@@ -34,7 +34,7 @@ void Class::setContractId(const string& id) { this->contractId = id; }
 void Class::setStudentId(const string& id) { this->studentId = id; }
 void Class::setTutorId(const string& id) { this->tutorId = id; }
 void Class::setSubject(const string& sub) { this->subject = sub; }
-void Class::setSchedule(const string& sch) { this->schedule = sch; }
+void Class::setSchedule(const Schedule& sch) { this->schedule = sch; }
 void Class::setStartDate(const string& start) { this->startDate = start; }
 void Class::setEndDate(const string& end) { this->endDate = end; }
 void Class::setStatus(const string& st) { this->status = st; }
@@ -43,6 +43,6 @@ void Class::setTuitionFee(double fee) { this->tuitionFee = fee; }
 void Class::display() const {
   cout << "[Lop Hoc] Ma: " << classId << " | Hoc sinh: " << studentId
        << " | Gia su: " << tutorId << " | Mon: " << subject
-       << " | Lich: " << schedule << " | Hoc phi: " << tuitionFee << " VND"
+       << " | Lich: " << schedule.chuoi_hien_thi() << " | Hoc phi: " << tuitionFee << " VND"
        << " | Trang thai: " << status << endl;
 }

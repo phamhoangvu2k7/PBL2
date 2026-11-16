@@ -984,7 +984,7 @@ void MainWindow::onSearchAvailableClasses() {
                 availableClassesTable->insertRow(row);
                 availableClassesTable->setItem(row, 0, UiHelper::o_bang(UiHelper::sang_qstring(c->getClassId())));
                 availableClassesTable->setItem(row, 1, UiHelper::o_bang(UiHelper::sang_qstring(c->getSubject())));
-                availableClassesTable->setItem(row, 2, UiHelper::o_bang(UiHelper::chu_lich(c->getSchedule())));
+                availableClassesTable->setItem(row, 2, UiHelper::o_bang(UiHelper::sang_qstring(c->getSchedule().chuoi_hien_thi())));
                 availableClassesTable->setItem(row, 3, UiHelper::o_bang(QString::number(c->getTuitionFee())));
                 availableClassesTable->setItem(row, 4, UiHelper::o_bang(UiHelper::sang_qstring(c->getTutorId())));
                 Tutor* t = service.tim_gia_su(c->getTutorId());
@@ -1310,7 +1310,7 @@ void MainWindow::refreshPendingRequests() {
             pendingRequestsTable->insertRow(row);
             pendingRequestsTable->setItem(row, 0, UiHelper::o_bang(UiHelper::sang_qstring(c->getClassId())));
             pendingRequestsTable->setItem(row, 1, UiHelper::o_bang(UiHelper::sang_qstring(c->getSubject())));
-            pendingRequestsTable->setItem(row, 2, UiHelper::o_bang(UiHelper::chu_lich(c->getSchedule())));
+            pendingRequestsTable->setItem(row, 2, UiHelper::o_bang(UiHelper::sang_qstring(c->getSchedule().chuoi_hien_thi())));
             pendingRequestsTable->setItem(row, 3, UiHelper::o_bang(UiHelper::sang_qstring(c->getStudentId())));
             pendingRequestsTable->setItem(row, 4, UiHelper::o_bang(s ? UiHelper::sang_qstring(s->getFullName()) : "N/A"));
             pendingRequestsTable->setItem(row, 5, UiHelper::o_bang(s ? UiHelper::sang_qstring(s->getPhone()) : "N/A"));
@@ -1349,7 +1349,7 @@ void MainWindow::refreshMyClasses() {
             myClassesTable->insertRow(row);
             myClassesTable->setItem(row, 0, UiHelper::o_bang(UiHelper::sang_qstring(c->getClassId())));
             myClassesTable->setItem(row, 1, UiHelper::o_bang(UiHelper::sang_qstring(c->getSubject())));
-            myClassesTable->setItem(row, 2, UiHelper::o_bang(UiHelper::chu_lich(c->getSchedule())));
+            myClassesTable->setItem(row, 2, UiHelper::o_bang(UiHelper::sang_qstring(c->getSchedule().chuoi_hien_thi())));
             myClassesTable->setItem(row, 3, UiHelper::o_bang(QString::number(c->getTuitionFee())));
 
             Tutor* t = service.tim_gia_su(c->getTutorId());

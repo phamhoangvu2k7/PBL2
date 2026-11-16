@@ -30,11 +30,8 @@ Class* CenterService::tim_trung_lich_gia_su(const string& tutorId, const Schedul
     Node<Class*>* cur = classRepo.getAll().getHead();
     while (cur != nullptr) {
         Class* c = cur->data;
-        if (c->getTutorId() == tutorId && chiem_lich(c)) {
-            Schedule other;
-            if (Schedule::doc_lich(c->getSchedule(), other, nullptr) && schedule.trung_lich(other)) {
-                return c;
-            }
+        if (c->getTutorId() == tutorId && chiem_lich(c) && schedule.trung_lich(c->getSchedule())) {
+            return c;
         }
         cur = cur->next;
     }
@@ -47,11 +44,9 @@ Class* CenterService::tim_trung_lich_hoc_vien(const string& studentId, const Sch
         Class* c = cur->data;
         // hoc vien chi bi chiem lich boi lop PENDING / ACTIVE
         if (c->getStudentId() == studentId &&
-            (c->getStatus() == "PENDING" || c->getStatus() == "ACTIVE")) {
-            Schedule other;
-            if (Schedule::doc_lich(c->getSchedule(), other, nullptr) && schedule.trung_lich(other)) {
-                return c;
-            }
+            (c->getStatus() == "PENDING" || c->getStatus() == "ACTIVE") &&
+            schedule.trung_lich(c->getSchedule())) {
+            return c;
         }
         cur = cur->next;
     }
@@ -291,16 +286,16 @@ bool CenterService::mo_lop(const string& tutorId, const string& subject,
     Class* conflict = tim_trung_lich_gia_su(tutorId, parsed);
     if (conflict != nullptr) {
         string msg = "Lich bi trung voi ca " + conflict->getClassId() + " (" +
-                     conflict->getSubject() + ": " + conflict->getSchedule() + ") cua ban!";
+                     conflict->getSubject() + ": " + conflict->getSchedule().chuoi_luu() + ") cua ban!";
         StringUtils::gan(outError, msg);
         return false;
     }
 
-    // sinh ma lop, luu lich dang chuan
+    // sinh ma lop, luu lich da phan tich
     string classId = IdGenerator::generateClassId();
     if (outClassId != nullptr) *outClassId = classId;
 
-    Class* newClass = new Class(classId, "", "", tutorId, subject, parsed.chuoi_luu(),
+    Class* newClass = new Class(classId, "", "", tutorId, subject, parsed,
                                 startDate, endDate, "AVAILABLE", tuitionFee);
     classRepo.add(newClass);
 
@@ -330,15 +325,12 @@ bool CenterService::dang_ky_lop(const string& studentId, const string& classId,
     }
 
     // hoc vien khong hoc 2 ca cung luc
-    Schedule wanted;
-    if (Schedule::doc_lich(cls->getSchedule(), wanted, nullptr)) {
-        Class* conflict = tim_trung_lich_hoc_vien(studentId, wanted);
-        if (conflict != nullptr) {
-            string msg = "Lich bi trung voi lop " + conflict->getClassId() + " (" +
-                         conflict->getSubject() + ": " + conflict->getSchedule() + ") ban da dang ky!";
-            StringUtils::gan(outError, msg);
-            return false;
-        }
+    Class* conflict = tim_trung_lich_hoc_vien(studentId, cls->getSchedule());
+    if (conflict != nullptr) {
+        string msg = "Lich bi trung voi lop " + conflict->getClassId() + " (" +
+                     conflict->getSubject() + ": " + conflict->getSchedule().chuoi_luu() + ") ban da dang ky!";
+        StringUtils::gan(outError, msg);
+        return false;
     }
 
     // chuyen PENDING va gan hoc vien

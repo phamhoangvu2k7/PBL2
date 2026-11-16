@@ -1,16 +1,9 @@
 #include "../../include/helper/UiHelper.h"
-#include "../../include/entities/Schedule.h"
 #include <QColor>
 #include <QFont>
 
 QString UiHelper::sang_qstring(const std::string& s) {
     return QString::fromStdString(s);
-}
-
-QString UiHelper::chu_lich(const std::string& raw) {
-    Schedule s;
-    if (Schedule::doc_lich(raw, s, nullptr)) return sang_qstring(s.chuoi_hien_thi());
-    return sang_qstring(raw);
 }
 
 QString UiHelper::ten_kem_ma(const std::string& name, const std::string& id) {
