@@ -3,12 +3,10 @@
 #include "../../include/helper/Validator.h"
 #include "../../include/helper/StringUtils.h"
 #include "../../include/helper/PasswordHasher.h"
-#include <iostream>
 using namespace std;
 
 
 bool bao_loi(string* outError, const string& msg) {
-    cout << "[Loi] " << msg << "\n";
     StringUtils::gan(outError, msg);
     return false;
 }

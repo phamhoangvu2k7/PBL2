@@ -1,7 +1,6 @@
 #ifndef CENTER_SERVICE_H
 #define CENTER_SERVICE_H
 
-#include <iostream>
 #include <string>
 #include <vector>
 #include "../entities/Student.h"

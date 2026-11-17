@@ -96,15 +96,12 @@ bool CenterService::them_hoc_vien(Student* student) {
 
     // kiem tra du lieu
     if (!Validator::khong_rong(student->getFullName())) {
-        cout << "[Loi] Ten hoc vien khong duoc de trong!\n";
         return false;
     }
     if (!Validator::sdt_hop_le(student->getPhone())) {
-        cout << "[Loi] " << Validator::loi_sdt(student->getPhone()) << "\n";
         return false;
     }
     if (!Validator::email_hop_le(student->getEmail())) {
-        cout << "[Loi] " << Validator::loi_email(student->getEmail()) << "\n";
         return false;
     }
 
@@ -117,7 +114,6 @@ bool CenterService::them_hoc_vien(Student* student) {
     }
 
     if (studentRepo.findById(student->getId()) != nullptr) {
-        cout << "[Loi] Ma hoc vien " << student->getId() << " da ton tai!\n";
         return false;
     }
     return studentRepo.add(student);
@@ -128,19 +124,15 @@ bool CenterService::them_gia_su(Tutor* tutor) {
 
     // kiem tra du lieu
     if (!Validator::khong_rong(tutor->getFullName())) {
-        cout << "[Loi] Ten gia su khong duoc de trong!\n";
         return false;
     }
     if (!Validator::sdt_hop_le(tutor->getPhone())) {
-        cout << "[Loi] " << Validator::loi_sdt(tutor->getPhone()) << "\n";
         return false;
     }
     if (!Validator::email_hop_le(tutor->getEmail())) {
-        cout << "[Loi] " << Validator::loi_email(tutor->getEmail()) << "\n";
         return false;
     }
     if (!Validator::kinh_nghiem_hop_le(tutor->getExpYears())) {
-        cout << "[Loi] So nam kinh nghiem phai >= 0!\n";
         return false;
     }
 
@@ -152,7 +144,6 @@ bool CenterService::them_gia_su(Tutor* tutor) {
     }
 
     if (tutorRepo.findById(tutor->getId()) != nullptr) {
-        cout << "[Loi] Ma gia su " << tutor->getId() << " da ton tai!\n";
         return false;
     }
     return tutorRepo.add(tutor);
@@ -299,8 +290,6 @@ bool CenterService::mo_lop(const string& tutorId, const string& subject,
                                 startDate, endDate, "AVAILABLE", tuitionFee);
     classRepo.add(newClass);
 
-    cout << "[Thanh Cong] Gia su " << tutorId << " da mo thanh cong ca hoc "
-         << classId << " (Mon: " << subject << " | Lich: " << schedule << ")\n";
     return true;
 }
 
@@ -337,8 +326,6 @@ bool CenterService::dang_ky_lop(const string& studentId, const string& classId,
     cls->setStudentId(studentId);
     cls->setStatus("PENDING");
 
-    cout << "[Thanh Cong] Hoc vien " << studentId << " da dang ky ca hoc " << classId 
-         << ". Ca hoc da tam khoa cho Gia su xac nhan!\n";
     classRepo.update(cls);
     return true;
 }
@@ -348,17 +335,14 @@ bool CenterService::dang_ky_lop(const string& studentId, const string& classId,
 bool CenterService::duyet_lop(const string& tutorId, const string& classId) {
     Class* cls = classRepo.findById(classId);
     if (cls == nullptr) {
-        cout << "[Loi] Khong tim thay Lop hoc " << classId << "!\n";
         return false;
     }
 
     if (cls->getTutorId() != tutorId) {
-        cout << "[Loi] Lop hoc " << classId << " khong thuoc quan ly cua Gia su " << tutorId << "!\n";
         return false;
     }
 
     if (cls->getStatus() != "PENDING") {
-        cout << "[Loi] Lop hoc " << classId << " khong o trang thai cho duyet (PENDING)!\n";
         return false;
     }
 
@@ -380,8 +364,6 @@ bool CenterService::duyet_lop(const string& tutorId, const string& classId) {
         studentRepo.update(st);
     }
 
-    cout << "[Thanh Cong] Gia su da phe duyet lop " << classId 
-         << ". Hop dong " << contractId << " da duoc khoi tao thanh cong!\n";
     classRepo.update(cls);
     return true;
 }
@@ -389,17 +371,14 @@ bool CenterService::duyet_lop(const string& tutorId, const string& classId) {
 bool CenterService::tu_choi_lop(const string& tutorId, const string& classId) {
     Class* cls = classRepo.findById(classId);
     if (cls == nullptr) {
-        cout << "[Loi] Khong tim thay Lop hoc " << classId << "!\n";
         return false;
     }
 
     if (cls->getTutorId() != tutorId) {
-        cout << "[Loi] Lop hoc " << classId << " khong thuoc ve Gia su " << tutorId << "!\n";
         return false;
     }
 
     if (cls->getStatus() != "PENDING") {
-        cout << "[Loi] Lop hoc " << classId << " khong o trang thai cho duyet!\n";
         return false;
     }
 
@@ -407,8 +386,6 @@ bool CenterService::tu_choi_lop(const string& tutorId, const string& classId) {
     cls->setStudentId("");
     cls->setStatus("AVAILABLE");
 
-    cout << "[Thong Bao] Gia su da tu choi yeu cau. Ca hoc " << classId
-         << " da duoc mo lai (AVAILABLE) cho hoc vien khac!\n";
     classRepo.update(cls);
     return true;
 }
@@ -430,7 +407,6 @@ bool CenterService::xoa_lop_trong(const string& tutorId, const string& classId, 
         return false;
     }
     classRepo.remove(classId);
-    cout << "[Thanh Cong] Gia su " << tutorId << " da xoa lop " << classId << "\n";
     return true;
 }
 
@@ -452,7 +428,6 @@ bool CenterService::rut_dang_ky(const string& studentId, const string& classId, 
     cls->setStudentId("");
     cls->setStatus("AVAILABLE");
     classRepo.update(cls);
-    cout << "[Thong Bao] Hoc vien " << studentId << " da rut dang ky lop " << classId << "\n";
     return true;
 }
 
@@ -505,7 +480,6 @@ void CenterService::ket_thuc_hop_dong(Contract* ct) {
         st->setHasTutor(con_hop_dong_mo(st->getId()));
         studentRepo.update(st);
     }
-    cout << "[Thong Bao] Hop dong " << ct->getContractId() << " da ket thuc\n";
 }
 
 bool CenterService::yeu_cau_ket_thuc(const string& personId, const string& contractId,
