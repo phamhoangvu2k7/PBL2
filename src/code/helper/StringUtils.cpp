@@ -13,16 +13,6 @@ string StringUtils::toUpper(string s) {
     return s;
 }
 
-string StringUtils::toLower(string s) {
-    for (char& c : s) c = (char)tolower((unsigned char)c);
-    return s;
-}
-
-bool StringUtils::co_chua(const string& str, const string& sub) {
-    if (sub.empty()) return true;
-    return toLower(str).find(toLower(sub)) != string::npos;
-}
-
 bool StringUtils::co_khoang_trang(const string& s) {
     for (char c : s) {
         if (isspace((unsigned char)c)) return true;

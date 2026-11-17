@@ -33,6 +33,7 @@ set(CORE_SOURCES
     src/code/services/AuthService.cpp
     src/code/services/AdminService.cpp
     src/code/services/ProfileSync.cpp
+    src/code/services/AdminService.cpp
     src/code/services/DemoData.cpp
 )
 
@@ -71,6 +72,7 @@ set(HEADERS
     src/include/services/AuthService.h
     src/include/services/AdminService.h
     src/include/services/ProfileSync.h
+    src/include/services/AdminService.h
     src/include/services/DemoData.h
     src/include/ui/MainWindow.h
     src/include/ui/LoginWindow.h

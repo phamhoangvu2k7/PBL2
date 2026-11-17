@@ -5,15 +5,11 @@
 #include "../../include/helper/PasswordHasher.h"
 using namespace std;
 
-namespace {
 
 bool bao_loi(string* outError, const string& msg) {
     StringUtils::gan(outError, msg);
     return false;
 }
-
-}  // namespace
-
 
 AuthService::AuthService(AccountRepository& accounts)
     : accountRepo(accounts), currentUser(nullptr) {
@@ -30,7 +26,7 @@ AuthService::AuthService(AccountRepository& accounts)
 bool AuthService::registerAccount(const string& username, const string& password,
                                   const string& role, const string& fullNameIn,
                                   const string& phoneIn, const string& emailIn,
-                                  string* outError) {
+                                  string* outError, string* outPersonId) {
     string fullName = StringUtils::trim(fullNameIn);
     string phone    = StringUtils::trim(phoneIn);
     string email    = StringUtils::trim(emailIn);
@@ -72,8 +68,9 @@ bool AuthService::registerAccount(const string& username, const string& password
         }
     }
 
-    // ma SV/GS se cap sau trong cap_ma_con_thieu()
-    string personId = (role == "Admin") ? "ADMIN" : "";
+    string personId = (role == "Admin")   ? "ADMIN"
+                    : (role == "Student") ? IdGenerator::generateStudentId()
+                                          : IdGenerator::generateTutorId();
 
     string accId    = IdGenerator::generateAccountId();
     string passHash = PasswordHasher::hash(password);
@@ -85,27 +82,8 @@ bool AuthService::registerAccount(const string& username, const string& password
         return bao_loi(outError, "Khong the tao tai khoan!");
     }
 
+    StringUtils::gan(outPersonId, personId);
     return true;
-}
-
-int AuthService::cap_ma_con_thieu() {
-    int count = 0;
-    Node<Account*>* cur = accountRepo.getAll().getHead();
-    while (cur != nullptr) {
-        Account* a = cur->data;
-        if (a->getPersonId().empty()) {
-            if (a->getRole() == "Student") {
-                a->setPersonId(IdGenerator::generateStudentId());
-                count++;
-            } else if (a->getRole() == "Tutor") {
-                a->setPersonId(IdGenerator::generateTutorId());
-                count++;
-            }
-        }
-        cur = cur->next;
-    }
-    if (count > 0) accountRepo.save();
-    return count;
 }
 
 // dang nhap
@@ -147,8 +125,6 @@ string AuthService::ten_hien_tai() const {
     return currentUser ? currentUser->getDisplayName() : "";
 }
 
-bool AuthService::la_hoc_vien() const { return currentUser && currentUser->getRole() == "Student"; }
-bool AuthService::la_gia_su()   const { return currentUser && currentUser->getRole() == "Tutor"; }
 bool AuthService::la_admin()   const { return currentUser && currentUser->getRole() == "Admin"; }
 
 bool AuthService::username_ton_tai(const string& username) const {

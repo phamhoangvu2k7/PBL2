@@ -11,7 +11,6 @@ public:
 
     static QString sang_qstring(const std::string& s);
 
-    static QString chu_lich(const std::string& raw);
 
     static QString ten_kem_ma(const std::string& name, const std::string& id);
 

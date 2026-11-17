@@ -1,1 +1,2 @@
 HD001|GS004|SV003|||Tin Hoc Chuyen|Ended|GS004|Het Hop Dong|29/10/2026
+HD002|GS004|SV003|||OOP|Active|||

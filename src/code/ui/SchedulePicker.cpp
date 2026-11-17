@@ -31,7 +31,7 @@ SchedulePicker::SchedulePicker(QWidget* parent) : QWidget(parent) {
             border: 1px solid #e2e8f0;
             border-radius: 8px;
         }
-        QLabel#slotTitle { font-weight: bold; color: #1e40af; }
+        QLabel#slotTitle { font-weight: bold; color: #1e2b4a; }
         QPushButton#dayBtn {
             background-color: #e2e8f0;
             color: #475569;
@@ -43,9 +43,9 @@ SchedulePicker::SchedulePicker(QWidget* parent) : QWidget(parent) {
         }
         QPushButton#dayBtn:hover { background-color: #cbd5e1; }
         QPushButton#dayBtn:checked {
-            background-color: #1d4ed8;
+            background-color: #1e2b4a;
             color: #ffffff;
-            border-color: #1e40af;
+            border-color: #1e2b4a;
         }
         QPushButton#removeSlotBtn {
             background-color: #dc2626;
@@ -54,11 +54,11 @@ SchedulePicker::SchedulePicker(QWidget* parent) : QWidget(parent) {
         QPushButton#removeSlotBtn:hover { background-color: #b91c1c; }
         QPushButton#removeSlotBtn:disabled { background-color: #cbd5e1; }
         QLabel#schedulePreview {
-            background-color: #eff6ff;
-            border: 1px solid #bfdbfe;
+            background-color: #eef1f6;
+            border: 1px solid #cbd3e3;
             border-radius: 6px;
             padding: 8px 10px;
-            color: #1e3a8a;
+            color: #1e2b4a;
         }
         QLabel#schedulePreview[invalid="true"] {
             background-color: #fef2f2;
@@ -229,6 +229,4 @@ void SchedulePicker::updatePreview() {
     // ap lai style de property invalid co hieu luc
     previewLabel->style()->unpolish(previewLabel);
     previewLabel->style()->polish(previewLabel);
-
-    emit scheduleChanged();
 }

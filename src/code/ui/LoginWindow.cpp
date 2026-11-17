@@ -45,37 +45,29 @@ QWidget* LoginWindow::createLoginPage() {
     layout->setSpacing(0);
 
     // tieu de
-    QLabel* titleLabel = new QLabel("HE THONG QUAN LY GIA SU");
-    titleLabel->setAlignment(Qt::AlignCenter);
+    QLabel* titleLabel = new QLabel("Trung tam gia su");
     titleLabel->setObjectName("titleLabel");
 
-    QLabel* subtitleLabel = new QLabel("Trung Tam Gia Su PBL2");
-    subtitleLabel->setAlignment(Qt::AlignCenter);
+    QLabel* subtitleLabel = new QLabel("Dang nhap de tiep tuc");
     subtitleLabel->setObjectName("subtitleLabel");
 
-    QFrame* divider = new QFrame();
-    divider->setFrameShape(QFrame::HLine);
-    divider->setObjectName("divider");
-
     layout->addWidget(titleLabel);
-    layout->addSpacing(4);
+    layout->addSpacing(2);
     layout->addWidget(subtitleLabel);
-    layout->addSpacing(16);
-    layout->addWidget(divider);
-    layout->addSpacing(20);
+    layout->addSpacing(28);
 
     // form
-    QLabel* usernameLabel = new QLabel("Ten dang nhap:");
+    QLabel* usernameLabel = new QLabel("Ten dang nhap");
     usernameLabel->setObjectName("fieldLabel");
     loginUsernameInput = new QLineEdit();
-    loginUsernameInput->setPlaceholderText("Nhap ten dang nhap...");
+    loginUsernameInput->setPlaceholderText("");
     loginUsernameInput->setObjectName("inputField");
     loginUsernameInput->setMinimumHeight(40);
 
-    QLabel* passwordLabel = new QLabel("Mat khau:");
+    QLabel* passwordLabel = new QLabel("Mat khau");
     passwordLabel->setObjectName("fieldLabel");
     loginPasswordInput = new QLineEdit();
-    loginPasswordInput->setPlaceholderText("Nhap mat khau...");
+    loginPasswordInput->setPlaceholderText("");
     loginPasswordInput->setEchoMode(QLineEdit::Password);
     loginPasswordInput->setObjectName("inputField");
     loginPasswordInput->setMinimumHeight(40);
@@ -85,7 +77,6 @@ QWidget* LoginWindow::createLoginPage() {
 
     loginErrorLabel = new QLabel("");
     loginErrorLabel->setObjectName("errorLabel");
-    loginErrorLabel->setAlignment(Qt::AlignCenter);
     loginErrorLabel->setWordWrap(true);
     loginErrorLabel->setMinimumHeight(24);
 
@@ -101,7 +92,7 @@ QWidget* LoginWindow::createLoginPage() {
     layout->addSpacing(14);
 
     // nut
-    btnLogin = new QPushButton("DANG NHAP");
+    btnLogin = new QPushButton("Dang nhap");
     btnLogin->setObjectName("primaryBtn");
     btnLogin->setMinimumHeight(44);
     btnLogin->setCursor(Qt::PointingHandCursor);
@@ -127,7 +118,6 @@ QWidget* LoginWindow::createLoginPage() {
 
     QLabel* hintLabel = new QLabel("Admin mac dinh: admin / admin123");
     hintLabel->setObjectName("hintLabel");
-    hintLabel->setAlignment(Qt::AlignCenter);
     layout->addWidget(hintLabel);
 
     connect(btnLogin,       &QPushButton::clicked, this, &LoginWindow::onLogin);
@@ -157,18 +147,11 @@ QWidget* LoginWindow::createRegisterPage() {
     layout->setSpacing(0);
 
     // tieu de
-    QLabel* titleLabel = new QLabel("TAO TAI KHOAN MOI");
-    titleLabel->setAlignment(Qt::AlignCenter);
+    QLabel* titleLabel = new QLabel("Tao tai khoan");
     titleLabel->setObjectName("titleLabel");
 
-    QFrame* divider = new QFrame();
-    divider->setFrameShape(QFrame::HLine);
-    divider->setObjectName("divider");
-
     layout->addWidget(titleLabel);
-    layout->addSpacing(10);
-    layout->addWidget(divider);
-    layout->addSpacing(14);
+    layout->addSpacing(20);
 
     // form
     regUsernameInput = new QLineEdit();
@@ -212,13 +195,13 @@ QWidget* LoginWindow::createRegisterPage() {
     QGridLayout* grid = new QGridLayout();
     grid->setHorizontalSpacing(16);
     grid->setVerticalSpacing(10);
-    grid->addWidget(makeField("Ten dang nhap:", regUsernameInput), 0, 0);
-    grid->addWidget(makeField("Vai tro:", regRoleCombo),           0, 1);
-    grid->addWidget(makeField("Ho va ten (hien thi):", regFullNameInput), 1, 0, 1, 2);
-    grid->addWidget(makeField("So dien thoai:", regPhoneInput),    2, 0);
-    grid->addWidget(makeField("Email:", regEmailInput),            2, 1);
-    grid->addWidget(makeField("Mat khau:", regPasswordInput),      3, 0);
-    grid->addWidget(makeField("Xac nhan mat khau:", regConfirmInput), 3, 1);
+    grid->addWidget(makeField("Ten dang nhap", regUsernameInput), 0, 0);
+    grid->addWidget(makeField("Vai tro", regRoleCombo),           0, 1);
+    grid->addWidget(makeField("Ho va ten (hien thi)", regFullNameInput), 1, 0, 1, 2);
+    grid->addWidget(makeField("So dien thoai", regPhoneInput),    2, 0);
+    grid->addWidget(makeField("Email", regEmailInput),            2, 1);
+    grid->addWidget(makeField("Mat khau", regPasswordInput),      3, 0);
+    grid->addWidget(makeField("Xac nhan mat khau", regConfirmInput), 3, 1);
     layout->addLayout(grid);
     layout->addSpacing(10);
 
@@ -231,13 +214,12 @@ QWidget* LoginWindow::createRegisterPage() {
 
     regErrorLabel = new QLabel("");
     regErrorLabel->setObjectName("errorLabel");
-    regErrorLabel->setAlignment(Qt::AlignCenter);
     regErrorLabel->setWordWrap(true);
     regErrorLabel->setMinimumHeight(24);
     layout->addWidget(regErrorLabel);
     layout->addSpacing(10);
 
-    btnRegister = new QPushButton("TAO TAI KHOAN");
+    btnRegister = new QPushButton("Tao tai khoan");
     btnRegister->setObjectName("primaryBtn");
     btnRegister->setMinimumHeight(44);
     btnRegister->setCursor(Qt::PointingHandCursor);
@@ -248,7 +230,7 @@ QWidget* LoginWindow::createRegisterPage() {
 
     layout->addWidget(btnRegister);
     layout->addSpacing(8);
-    layout->addWidget(btnGoLogin, 0, Qt::AlignCenter);
+    layout->addWidget(btnGoLogin, 0, Qt::AlignLeft);
     layout->addStretch();
 
     connect(btnRegister,    &QPushButton::clicked, this, &LoginWindow::onRegister);
@@ -261,109 +243,79 @@ QWidget* LoginWindow::createRegisterPage() {
 // style (theme sang)
 
 void LoginWindow::applyStyles() {
+    // toi gian: nen trang, mau navy, vien manh, khong do bong / gradient
     setStyleSheet(R"(
-        QDialog {
+        QDialog, QWidget {
             background-color: #ffffff;
-        }
-        QWidget {
-            background-color: #ffffff;
-            color: #1e293b;
+            color: #1f2937;
             font-family: 'Segoe UI', Arial, sans-serif;
             font-size: 14px;
         }
         QLabel#titleLabel {
-            font-size: 20px;
-            font-weight: bold;
-            color: #1e40af;
-            padding: 4px 0;
+            font-size: 22px;
+            font-weight: 600;
+            color: #1e2b4a;
         }
         QLabel#subtitleLabel {
             font-size: 13px;
-            color: #64748b;
-        }
-        QFrame#divider {
-            background-color: #e2e8f0;
-            max-height: 1px;
+            color: #6b7280;
         }
         QLabel#fieldLabel {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
-            color: #374151;
+            color: #4b5563;
         }
         QLabel#noteLabel {
             font-size: 12px;
-            color: #2563eb;
-            background-color: #eff6ff;
-            border: 1px solid #bfdbfe;
-            border-radius: 6px;
-            padding: 8px 10px;
+            color: #6b7280;
         }
         QLabel#hintLabel {
             font-size: 12px;
-            color: #94a3b8;
-            padding: 8px;
-            border-top: 1px solid #e2e8f0;
+            color: #9ca3af;
         }
         QLabel#errorLabel {
             font-size: 13px;
-            color: #dc2626;
-            background-color: #fef2f2;
-            border-radius: 6px;
-            padding: 4px 8px;
+            color: #b91c1c;
         }
-        QLineEdit#inputField {
-            background-color: #f8fafc;
-            border: 1.5px solid #cbd5e1;
-            border-radius: 8px;
-            padding: 8px 14px;
-            font-size: 14px;
-            color: #0f172a;
-            selection-background-color: #bfdbfe;
-        }
-        QLineEdit#inputField:focus {
-            border: 1.5px solid #2563eb;
+        QLineEdit#inputField, QComboBox#comboField {
             background-color: #ffffff;
-        }
-        QLineEdit#inputField:hover {
-            border-color: #93c5fd;
-        }
-        QComboBox#comboField {
-            background-color: #f8fafc;
-            border: 1.5px solid #cbd5e1;
-            border-radius: 8px;
-            padding: 8px 14px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 8px 12px;
             font-size: 14px;
-            color: #0f172a;
+            color: #111827;
+            selection-background-color: #dfe5f0;
+            selection-color: #1e2b4a;
         }
-        QComboBox#comboField:focus {
-            border-color: #2563eb;
+        QLineEdit#inputField:hover, QComboBox#comboField:hover {
+            border-color: #9ca3af;
         }
-        QPushButton#primaryBtn {
-            background-color: #1d4ed8;
+        QLineEdit#inputField:focus, QComboBox#comboField:focus {
+            border-color: #1e2b4a;
+        }        QPushButton#primaryBtn {
+            background-color: #1e2b4a;
             color: #ffffff;
             border: none;
-            border-radius: 8px;
+            border-radius: 6px;
             padding: 10px;
             font-size: 14px;
-            font-weight: bold;
-            letter-spacing: 1px;
+            font-weight: 600;
         }
         QPushButton#primaryBtn:hover {
-            background-color: #1e40af;
+            background-color: #2b3b61;
         }
         QPushButton#primaryBtn:pressed {
-            background-color: #1e3a8a;
+            background-color: #16203a;
         }
         QPushButton#linkBtn {
             background: transparent;
-            color: #2563eb;
+            color: #1e2b4a;
             border: none;
             font-size: 13px;
             padding: 4px 0;
-            text-decoration: underline;
         }
         QPushButton#linkBtn:hover {
-            color: #1d4ed8;
+            text-decoration: underline;
         }
     )");
 }
@@ -424,18 +376,17 @@ void LoginWindow::onRegister() {
         return;
     }
 
-    // AuthService kiem tra du lieu, tra ly do neu sai
-    // ma SV/GS cap sau khi dang ky
-    std::string error;
+    // AuthService kiem tra du lieu, tra ly do neu sai, tra ma SV/GS vua cap
+    std::string error, personId;
     bool ok = m_auth.registerAccount(
         username.toStdString(), password.toStdString(), role.toStdString(),
-        fullName.toStdString(), phone.toStdString(), email.toStdString(), &error
+        fullName.toStdString(), phone.toStdString(), email.toStdString(), &error, &personId
     );
 
     if (ok) {
         // bao thanh cong, ve trang dang nhap
         regErrorLabel->setStyleSheet("color: #16a34a; background-color: #f0fdf4; border: 1px solid #bbf7d0;");
-        regErrorLabel->setText("Tao tai khoan thanh cong! Ma dinh danh se duoc cap khi ban dang nhap.");
+        regErrorLabel->setText("Tao tai khoan thanh cong! Ma cua ban: " + QString::fromStdString(personId));
 
         regUsernameInput->clear();
         regFullNameInput->clear();
@@ -448,8 +399,8 @@ void LoginWindow::onRegister() {
         loginPasswordInput->clear();
         loginPasswordInput->setFocus();
 
-        // sau 1 giay ve trang dang nhap
-        QTimer::singleShot(1000, this, &LoginWindow::onShowLoginPage);
+        // sau 2 giay ve trang dang nhap (du thoi gian doc ma)
+        QTimer::singleShot(2000, this, &LoginWindow::onShowLoginPage);
     } else {
         regErrorLabel->setText(QString::fromStdString(error));
     }

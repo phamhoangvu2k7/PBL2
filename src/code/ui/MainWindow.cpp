@@ -143,7 +143,7 @@ void MainWindow::applyStyles() {
             font-size: 13px;
         }
         QTabBar::tab:selected {
-            background: #1e40af;
+            background: #1e2b4a;
             color: #ffffff;
         }
         QTabBar::tab:hover:!selected {
@@ -163,7 +163,7 @@ void MainWindow::applyStyles() {
             subcontrol-origin: margin;
             left: 12px;
             padding: 0 6px;
-            color: #1e40af;
+            color: #1e2b4a;
         }
         QLineEdit, QComboBox {
             border: 1.5px solid #cbd5e1;
@@ -175,7 +175,7 @@ void MainWindow::applyStyles() {
             font-size: 13px;
         }
         QLineEdit:focus, QComboBox:focus {
-            border-color: #2563eb;
+            border-color: #1e2b4a;
             background-color: #ffffff;
         }
         QLineEdit[readOnly="true"] {
@@ -183,7 +183,7 @@ void MainWindow::applyStyles() {
             color: #64748b;
         }
         QPushButton {
-            background-color: #1d4ed8;
+            background-color: #1e2b4a;
             color: #ffffff;
             border-radius: 6px;
             padding: 8px 18px;
@@ -191,21 +191,25 @@ void MainWindow::applyStyles() {
             font-size: 13px;
             border: none;
         }
-        QPushButton:hover { background-color: #1e40af; }
-        QPushButton:pressed { background-color: #1e3a8a; }
-        QPushButton#btnSuccess { background-color: #059669; }
+        QPushButton:hover { background-color: #2b3b61; }
+        QPushButton:pressed { background-color: #16203a; }
+        QPushButton#btnSuccess { background-color: #059669; color: #ffffff; }
         QPushButton#btnSuccess:hover { background-color: #047857; }
-        QPushButton#btnDanger { background-color: #dc2626; }
+        QPushButton#btnDanger { background-color: #dc2626; color: #ffffff; }
         QPushButton#btnDanger:hover { background-color: #b91c1c; }
-        QPushButton#btnSecondary { background-color: #64748b; }
+        QPushButton#btnSecondary { background-color: #64748b; color: #ffffff; }
         QPushButton#btnSecondary:hover { background-color: #475569; }
+        QPushButton:disabled, QPushButton#btnSuccess:disabled,
+        QPushButton#btnDanger:disabled, QPushButton#btnSecondary:disabled {
+            background-color: #cbd5e1; color: #f1f5f9;
+        }
         QTableWidget {
             background-color: #ffffff;
             border: 1px solid #e2e8f0;
             gridline-color: #f1f5f9;
             border-radius: 6px;
-            selection-background-color: #dbeafe;
-            selection-color: #1e3a8a;
+            selection-background-color: #dfe5f0;
+            selection-color: #1e2b4a;
             font-size: 13px;
         }
         QHeaderView::section {
@@ -248,7 +252,7 @@ QWidget* MainWindow::createUsersTab() {
     stForm->setSpacing(10);
 
     stGeneratedIdLabel = new QLabel("(Tu dong sinh sau khi luu)");
-    stGeneratedIdLabel->setStyleSheet("color:#1d4ed8;font-weight:600;font-style:italic;");
+    stGeneratedIdLabel->setStyleSheet("color:#1e2b4a;font-weight:600;font-style:italic;");
     stNameInput     = new QLineEdit(); stNameInput->setPlaceholderText("VD: Le Van C");
     stGradeInput    = new QLineEdit(); stGradeInput->setPlaceholderText("VD: 12");
     stPhoneInput    = new QLineEdit(); stPhoneInput->setPlaceholderText("VD: 0912345678");
@@ -277,7 +281,7 @@ QWidget* MainWindow::createUsersTab() {
     tuForm->setSpacing(10);
 
     tuGeneratedIdLabel = new QLabel("(Tu dong sinh sau khi luu)");
-    tuGeneratedIdLabel->setStyleSheet("color:#1d4ed8;font-weight:600;font-style:italic;");
+    tuGeneratedIdLabel->setStyleSheet("color:#1e2b4a;font-weight:600;font-style:italic;");
     tuNameInput     = new QLineEdit(); tuNameInput->setPlaceholderText("VD: Nguyen Thi D");
     tuPhoneInput    = new QLineEdit(); tuPhoneInput->setPlaceholderText("VD: 0987654321");
     tuEmailInput    = new QLineEdit(); tuEmailInput->setPlaceholderText("VD: abc@gmail.com");
@@ -392,7 +396,7 @@ QWidget* MainWindow::createBookingTab() {
     selectedClassIdInput->setPlaceholderText("(Click vao hang o bang tren de chon lop)");
 
     bookingActorLabel = new QLabel();
-    bookingActorLabel->setStyleSheet("color:#1d4ed8;font-weight:600;");
+    bookingActorLabel->setStyleSheet("color:#1e2b4a;font-weight:600;");
     bookingStudentCombo = new QComboBox();  // chi Admin thay
     QWidget* actorBox = new QWidget();
     QHBoxLayout* actorLayout = new QHBoxLayout(actorBox);
@@ -432,7 +436,7 @@ QWidget* MainWindow::createTutorTab() {
     QGroupBox* actorBox = new QGroupBox("Gia Su Dang Thao Tac");
     QHBoxLayout* actorLayout = new QHBoxLayout(actorBox);
     tutorActorLabel = new QLabel();
-    tutorActorLabel->setStyleSheet("color:#1d4ed8;font-weight:600;");
+    tutorActorLabel->setStyleSheet("color:#1e2b4a;font-weight:600;");
     tutorActorCombo = new QComboBox();  // chi Admin thay
     actorLayout->addWidget(tutorActorLabel, 1);
     actorLayout->addWidget(tutorActorCombo, 1);
@@ -445,7 +449,7 @@ QWidget* MainWindow::createTutorTab() {
     openForm->setSpacing(10);
 
     QLabel* autoIdNote = new QLabel("(He thong tu dong sinh)");
-    autoIdNote->setStyleSheet("color:#1d4ed8;font-style:italic;font-weight:600;");
+    autoIdNote->setStyleSheet("color:#1e2b4a;font-style:italic;font-weight:600;");
 
     openSubjectInput = new QLineEdit(); openSubjectInput->setPlaceholderText("Mon hoc (VD: Toan 12)");
     schedulePicker   = new SchedulePicker();
@@ -618,7 +622,7 @@ void MainWindow::showTutorProfile(const QString& tutorId) {
     };
 
     QLabel* name = new QLabel(UiHelper::sang_qstring(t->getFullName()));
-    name->setStyleSheet("font-size:16px;font-weight:bold;color:#1e40af;");
+    name->setStyleSheet("font-size:16px;font-weight:bold;color:#1e2b4a;");
     form->addRow("Ho va ten:", name);
     form->addRow("Ma gia su:", value(UiHelper::sang_qstring(t->getId())));
     form->addRow("Gioi tinh:", value(UiHelper::sang_qstring(t->getGender())));
@@ -671,7 +675,7 @@ QWidget* MainWindow::createProfileTab() {
     form->setSpacing(10);
 
     pfIdLabel = new QLabel();
-    pfIdLabel->setStyleSheet("color:#1d4ed8;font-weight:600;");
+    pfIdLabel->setStyleSheet("color:#1e2b4a;font-weight:600;");
     pfName    = new QLineEdit();
     pfPhone   = new QLineEdit(); pfPhone->setMaxLength(10);
     pfEmail   = new QLineEdit();
@@ -980,7 +984,7 @@ void MainWindow::onSearchAvailableClasses() {
                 availableClassesTable->insertRow(row);
                 availableClassesTable->setItem(row, 0, UiHelper::o_bang(UiHelper::sang_qstring(c->getClassId())));
                 availableClassesTable->setItem(row, 1, UiHelper::o_bang(UiHelper::sang_qstring(c->getSubject())));
-                availableClassesTable->setItem(row, 2, UiHelper::o_bang(UiHelper::chu_lich(c->getSchedule())));
+                availableClassesTable->setItem(row, 2, UiHelper::o_bang(UiHelper::sang_qstring(c->getSchedule().chuoi_hien_thi())));
                 availableClassesTable->setItem(row, 3, UiHelper::o_bang(QString::number(c->getTuitionFee())));
                 availableClassesTable->setItem(row, 4, UiHelper::o_bang(UiHelper::sang_qstring(c->getTutorId())));
                 Tutor* t = service.tim_gia_su(c->getTutorId());
@@ -1306,7 +1310,7 @@ void MainWindow::refreshPendingRequests() {
             pendingRequestsTable->insertRow(row);
             pendingRequestsTable->setItem(row, 0, UiHelper::o_bang(UiHelper::sang_qstring(c->getClassId())));
             pendingRequestsTable->setItem(row, 1, UiHelper::o_bang(UiHelper::sang_qstring(c->getSubject())));
-            pendingRequestsTable->setItem(row, 2, UiHelper::o_bang(UiHelper::chu_lich(c->getSchedule())));
+            pendingRequestsTable->setItem(row, 2, UiHelper::o_bang(UiHelper::sang_qstring(c->getSchedule().chuoi_hien_thi())));
             pendingRequestsTable->setItem(row, 3, UiHelper::o_bang(UiHelper::sang_qstring(c->getStudentId())));
             pendingRequestsTable->setItem(row, 4, UiHelper::o_bang(s ? UiHelper::sang_qstring(s->getFullName()) : "N/A"));
             pendingRequestsTable->setItem(row, 5, UiHelper::o_bang(s ? UiHelper::sang_qstring(s->getPhone()) : "N/A"));
@@ -1345,7 +1349,7 @@ void MainWindow::refreshMyClasses() {
             myClassesTable->insertRow(row);
             myClassesTable->setItem(row, 0, UiHelper::o_bang(UiHelper::sang_qstring(c->getClassId())));
             myClassesTable->setItem(row, 1, UiHelper::o_bang(UiHelper::sang_qstring(c->getSubject())));
-            myClassesTable->setItem(row, 2, UiHelper::o_bang(UiHelper::chu_lich(c->getSchedule())));
+            myClassesTable->setItem(row, 2, UiHelper::o_bang(UiHelper::sang_qstring(c->getSchedule().chuoi_hien_thi())));
             myClassesTable->setItem(row, 3, UiHelper::o_bang(QString::number(c->getTuitionFee())));
 
             Tutor* t = service.tim_gia_su(c->getTutorId());

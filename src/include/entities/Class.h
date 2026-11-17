@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <string>
+#include "Schedule.h"
 using namespace std;
 
 class Class {
@@ -12,7 +13,7 @@ private:
     string studentId;
     string tutorId;
     string subject;
-    string schedule;
+    Schedule schedule;  // lich da phan tich, doc / ghi tep bang chuoi_luu / doc_lich
     string startDate;
     string endDate;
     string status;
@@ -21,7 +22,7 @@ private:
 public:
     Class();
     Class(const string& classId, const string& contractId, const string& studentId,
-          const string& tutorId, const string& subject, const string& schedule,
+          const string& tutorId, const string& subject, const Schedule& schedule,
           const string& startDate, const string& endDate, const string& status,
           double tuitionFee);
 
@@ -30,7 +31,7 @@ public:
     string getStudentId() const;
     string getTutorId() const;
     string getSubject() const;
-    string getSchedule() const;
+    const Schedule& getSchedule() const;
     string getStartDate() const;
     string getEndDate() const;
     string getStatus() const;
@@ -41,7 +42,7 @@ public:
     void setStudentId(const string& id);
     void setTutorId(const string& id);
     void setSubject(const string& sub);
-    void setSchedule(const string& sch);
+    void setSchedule(const Schedule& sch);
     void setStartDate(const string& start);
     void setEndDate(const string& end);
     void setStatus(const string& st);

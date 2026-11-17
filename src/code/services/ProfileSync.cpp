@@ -1,8 +1,6 @@
 #include "../../include/services/ProfileSync.h"
 
 int dong_bo_ho_so(AuthService& auth, CenterService& center, int* outFailed) {
-    auth.cap_ma_con_thieu();
-
     int created = 0;
     int failed = 0;
     for (Account* a : auth.ds_tai_khoan()) {

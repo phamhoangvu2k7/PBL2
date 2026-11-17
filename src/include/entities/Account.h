@@ -7,8 +7,8 @@ using namespace std;
 class Account {
 private:
     string accountId;
-    string username;  // ten dang nhap
-    string passwordHash;  // mat khau da bam
+    string username; 
+    string passwordHash; 
     string personId;  // ma SV / GS / ADMIN
     string role;
     string fullName; 

@@ -11,8 +11,6 @@ public:
 
     static string trim(const string& s);
     static string toUpper(string s);
-    static string toLower(string s);
-    static bool co_chua(const string& str, const string& sub);
     static bool co_khoang_trang(const string& s);
     static bool co_ky_tu(const string& s, const string& chars);
 
